@@ -1,0 +1,50 @@
+{
+  "_label": "TEST ONLY - not production values",
+  "_documentation": {
+    "label": "TEST ONLY - not production values",
+    "regenerate": "Rscript tests/generate_fixtures.R (run from r-service/)",
+    "seed": 20260102,
+    "n_personas": 300,
+    "n_items": 12,
+    "latent_scores": "MASS::mvrnorm(300, c(0, 0), Sigma), unit variances; TEST ONLY",
+    "noise_parameters": {
+      "residual": "x = loading * latent + sqrt(1 - loading^2) * N(0, 1)",
+      "cut_points": [-1, -0.3, 0.3, 1],
+      "categories": "findInterval(x, cut_points) + 1 -> 1..5",
+      "note": "TEST ONLY"
+    },
+    "planted_indices": {
+      "AnticDread": "item_001..item_006 (indices 0..5)",
+      "WorkRumination": "item_007..item_012 (indices 6..11)"
+    },
+    "note": "Planted values only (TEST ONLY). The CFA run is a technical rehearsal (smoke test), not validation. No pass/fail ranges for CFI, RMSEA or SRMR are defined here."
+  },
+  "planted_loadings": {
+    "_label": "TEST ONLY - not production values",
+    "tolerance": 0.1,
+    "values": {
+      "AnticDread": {
+        "item_001": 0.6,
+        "item_002": 0.65,
+        "item_003": 0.7,
+        "item_004": 0.75,
+        "item_005": 0.8,
+        "item_006": 0.7
+      },
+      "WorkRumination": {
+        "item_007": 0.6,
+        "item_008": 0.65,
+        "item_009": 0.7,
+        "item_010": 0.75,
+        "item_011": 0.8,
+        "item_012": 0.7
+      }
+    }
+  },
+  "planted_factor_correlation": {
+    "_label": "TEST ONLY - not production values",
+    "pair": "AnticDread_WorkRumination",
+    "value": 0.5,
+    "tolerance": 0.1
+  }
+}

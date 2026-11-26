@@ -135,8 +135,8 @@ Hard rules for every task:
 - [x] 7. Checkpoint: wrappers load
   - Confirm `api.R` sources without errors and that wrapper argument names and result fields match `r-service/PROBE_NOTES.md`. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Generate fixtures and record expected values from a real run
-  - [ ] 8.1 Write `r-service/tests/generate_fixtures.R`
+- [x] 8. Generate fixtures and record expected values from a real run
+  - [x] 8.1 Write `r-service/tests/generate_fixtures.R`
     - EGA input: fixed seed; 3 cluster centers in a 128-dimension space; 6 items per factor (18 items) as center + Gaussian noise; `item_004` = `item_003` + small noise (UVA target); `item_010` = equal mix of the factor 2 and factor 3 centers + noise (bootEGA target); 0-indexed `intended_dimensions`
     - EGA config in the fixture: every value labeled `"TEST ONLY"` in the script and in the JSON (for example a `"_label": "TEST ONLY - not production values"` field); none read from or written to `app-config/psychometric-procedure.yaml`. `uva_method` is `"mbr"` (TEST ONLY), the only value the service accepts
     - CFA input: documented seed; 300 personas; 12 items; 2 correlated factors `AnticDread` and `WorkRumination` (6 items each); latent scores from `MASS::mvrnorm`; continuous responses discretized to 1–5; `ordinal = true`; planted loadings and planted factor correlation written to `cfa_expected.json`
@@ -145,7 +145,7 @@ Hard rules for every task:
     - EGA expected values are not set by hand: the script sources the pipeline, runs `execute_ega_pipeline()` once on the generated input, and writes the actual `removed_uva`, `removed_bootega`, `nmi_initial`, `nmi_final` to `ega_expected.json`
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8_
 
-  - [ ] 8.2 Run the fixture generator
+  - [x] 8.2 Run the fixture generator
     - Run `Rscript tests/generate_fixtures.R` from `r-service/`
     - Confirm `tests/fixtures/ega_input.json`, `ega_expected.json`, `cfa_input.json`, `cfa_expected.json` exist and the expected values came from the run
     - If the run does not remove exactly one of `item_003` / `item_004`, or `nmi_final < nmi_initial`, report it to the owner instead of editing expected values by hand

@@ -230,6 +230,47 @@
         "chatSessionId": "sess_c7b167ad-ded0-4d5c-bec6-7c92f6d25bbf",
         "timestamp": 1795708637629
       }
+    ],
+    "8.1 Write `r-service/tests/generate_fixtures.R`": [
+      {
+        "executionId": "c4f16c6b-2f9a-42fa-a46c-48fd28b6bd03",
+        "chatSessionId": "sess_72d11781-b534-4f0e-9b10-424d5bf55356",
+        "timestamp": 1795708880189
+      },
+      {
+        "executionId": "c4f16c6b-2f9a-42fa-a46c-48fd28b6bd03",
+        "chatSessionId": "sess_72d11781-b534-4f0e-9b10-424d5bf55356",
+        "timestamp": 1795708984557
+      }
+    ],
+    "8.2 Run the fixture generator": [
+      {
+        "executionId": "c4f16c6b-2f9a-42fa-a46c-48fd28b6bd03",
+        "chatSessionId": "sess_72d11781-b534-4f0e-9b10-424d5bf55356",
+        "timestamp": 1795708984644
+      },
+      {
+        "executionId": "bd56b333-4589-43e2-98e3-e7f219358314",
+        "chatSessionId": "sess_72d11781-b534-4f0e-9b10-424d5bf55356",
+        "timestamp": 1795730897105
+      },
+      {
+        "executionId": "f76c1249-1493-4c3a-b956-5a90d4e23393",
+        "chatSessionId": "sess_72d11781-b534-4f0e-9b10-424d5bf55356",
+        "timestamp": 1795730986997
+      },
+      {
+        "executionId": "f76c1249-1493-4c3a-b956-5a90d4e23393",
+        "chatSessionId": "sess_72d11781-b534-4f0e-9b10-424d5bf55356",
+        "timestamp": 1795731054006
+      }
+    ],
+    "8. Generate fixtures and record expected values from a real run": [
+      {
+        "executionId": "bd56b333-4589-43e2-98e3-e7f219358314",
+        "chatSessionId": "sess_72d11781-b534-4f0e-9b10-424d5bf55356",
+        "timestamp": 1795730897312
+      }
     ]
   }
 }
