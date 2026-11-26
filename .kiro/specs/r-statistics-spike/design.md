@@ -65,6 +65,7 @@ r-service/
 │   ├── test_cfa.R
 │   ├── test_holzinger.R
 │   ├── test_errors.R
+│   ├── test_properties.R
 │   ├── generate_fixtures.R
 │   └── fixtures/
 │       ├── ega_input.json
@@ -74,29 +75,30 @@ r-service/
 └── README.md
 ```
 
-| File                             | Responsibility                                                                                   |
-| -------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `api.R`                          | Load packages (exit 1 listing missing ones), source modules, define routes, CORS, bind host/port |
-| `probe.R`                        | Development probe: print package versions and `str()` of EGAnet/lavaan results                   |
-| `config/loader.R`                | `validate_config()`: reject missing or null config fields                                        |
-| `validation/request_validator.R` | `validate_ega_request()`, `validate_cfa_request()`: schema and dimension checks                  |
-| `ega/pipeline.R`                 | `execute_ega_pipeline()`: orchestrates transpose → UVA → bootEGA → NMI → response                |
-| `ega/uva.R`                      | `run_uva_loop()`: repeated `EGAnet::UVA` until no redundant items                                |
-| `ega/bootega.R`                  | `run_bootega_loop()`: repeated `EGAnet::bootEGA` + `itemStability` until all items stable        |
-| `ega/nmi.R`                      | `compute_nmi()`: NMI via `igraph::compare(method = "nmi")`, NA handling                          |
-| `cfa/pipeline.R`                 | `execute_cfa_pipeline()`: orchestrates syntax → fit → extraction → response                      |
-| `cfa/model_builder.R`            | `build_lavaan_model()`: lavaan syntax from `model_specification.factors`                         |
-| `cfa/estimator.R`                | `run_cfa()`: `lavaan::cfa` with WLSMV or ML, warning capture, convergence check                  |
-| `cfa/extractor.R`                | Fit indices, standardized loadings, factor correlations                                          |
-| `logging/logger.R`               | JSON-line logging to stdout (normal) and stderr (errors)                                         |
-| `tests/run_all.R`                | Run all test files, print summary, exit 0 / 1                                                    |
-| `tests/helpers.R`                | `assert_true`, `assert_near`, `assert_in_range`, `assert_set_equal`, `assert_equal`              |
-| `tests/test_ega.R`               | EGA fixture test                                                                                 |
-| `tests/test_cfa.R`               | CFA planted-loading fixture test                                                                 |
-| `tests/test_holzinger.R`         | HolzingerSwineford1939 reference test against direct `lavaan::cfa()`                             |
-| `tests/test_errors.R`            | Validation and error-path tests (400/500, request_id)                                            |
-| `tests/generate_fixtures.R`      | Generate fixture inputs and record expected outputs                                              |
-| `README.md`                      | Packages with minimum versions, install, start, env vars, tests, curl health check, layout       |
+| File                             | Responsibility                                                                                                                      |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `api.R`                          | Load packages (exit 1 listing missing ones), source modules, define routes, CORS, bind host/port                                    |
+| `probe.R`                        | Development probe: print package versions and `str()` of EGAnet/lavaan results                                                      |
+| `config/loader.R`                | `validate_config()`: reject missing or null config fields                                                                           |
+| `validation/request_validator.R` | `validate_ega_request()`, `validate_cfa_request()`: schema and dimension checks                                                     |
+| `ega/pipeline.R`                 | `execute_ega_pipeline()`: orchestrates transpose → UVA → bootEGA → NMI → response                                                   |
+| `ega/uva.R`                      | `run_uva_loop()`: repeated `EGAnet::UVA` until no redundant items                                                                   |
+| `ega/bootega.R`                  | `run_bootega_loop()`: repeated `EGAnet::bootEGA` + `itemStability` until all items stable                                           |
+| `ega/nmi.R`                      | `compute_nmi()`: NMI via `igraph::compare(method = "nmi")`, NA handling                                                             |
+| `cfa/pipeline.R`                 | `execute_cfa_pipeline()`: orchestrates syntax → fit → extraction → response                                                         |
+| `cfa/model_builder.R`            | `build_lavaan_model()`: lavaan syntax from `model_specification.factors`                                                            |
+| `cfa/estimator.R`                | `run_cfa()`: `lavaan::cfa` with WLSMV or ML, warning capture, convergence check                                                     |
+| `cfa/extractor.R`                | Fit indices, standardized loadings, factor correlations                                                                             |
+| `logging/logger.R`               | JSON-line logging to stdout (normal) and stderr (errors)                                                                            |
+| `tests/run_all.R`                | Run all test files, print summary, exit 0 / 1                                                                                       |
+| `tests/helpers.R`                | `assert_true`, `assert_near`, `assert_in_range`, `assert_set_equal`, `assert_equal`                                                 |
+| `tests/test_ega.R`               | EGA fixture test                                                                                                                    |
+| `tests/test_cfa.R`               | CFA planted-loading fixture test                                                                                                    |
+| `tests/test_holzinger.R`         | HolzingerSwineford1939 reference test against direct `lavaan::cfa()`                                                                |
+| `tests/test_errors.R`            | Validation and error-path tests (400/500, request_id)                                                                               |
+| `tests/test_properties.R`        | Property-based tests for three pure functions (`compute_nmi`, `validate_config`, `build_lavaan_model`), via `testthat` + `hedgehog` |
+| `tests/generate_fixtures.R`      | Generate fixture inputs and record expected outputs                                                                                 |
+| `README.md`                      | Packages with minimum versions, install, start, env vars, tests, curl health check, layout                                          |
 
 ## Components and Interfaces
 
@@ -377,9 +379,9 @@ Example messages:
 
 ## Testing Strategy
 
-PBT does not apply. This service is a thin wrapper around EGAnet, lavaan and igraph, whose numerical behavior is the packages' responsibility, and the expensive bootstrap and estimation calls make 100+ randomized iterations impractical. A Correctness Properties section is therefore omitted. Correctness is checked with fixed-seed fixture tests, a lavaan reference test, and example-based validation/error tests.
+PBT is used only for three cheap pure functions (`compute_nmi`, `validate_config`, `build_lavaan_model`); see Correctness Properties below. PBT is not used for EGA, UVA, bootEGA or CFA because they wrap EGAnet, lavaan and igraph, and their bootstrap and estimation calls are too expensive for many randomized iterations. Those are covered by fixed-seed fixture tests, the lavaan reference test and example-based error tests.
 
-**Runner:** `Rscript tests/run_all.R` sources `helpers.R` and every test file, runs each test in `tryCatch`, prints a summary, exits 0 with `"All tests passed"` or exits 1 with the failed count. Failed numeric assertions print expected value, actual value and tolerance.
+**Runner:** `Rscript tests/run_all.R` sources `helpers.R` and every test file, runs each test in `tryCatch`, prints a summary, exits 0 with `"All tests passed"` or exits 1 with the failed count. Failed numeric assertions print expected value, actual value and tolerance. `test_properties.R` runs through `testthat` as described in Tooling (below), and its failed or errored expectations are added to this shared failure count.
 
 ### EGA fixture (`test_ega.R`)
 
@@ -398,9 +400,10 @@ PBT does not apply. This service is a thin wrapper around EGAnet, lavaan and igr
 ### CFA planted-loading fixture (`test_cfa.R`)
 
 - Generated by `generate_fixtures.R` with a documented seed: 300 personas, 12 items, 2 correlated factors (`AnticDread`, `WorkRumination`, 6 items each), latent scores from `MASS::mvrnorm`, continuous responses discretized to a 1–5 Likert scale, `ordinal = true`.
-- The planted loadings, planted factor correlation, loading tolerance, correlation tolerance and expected CFI/RMSEA/SRMR ranges are stored in `cfa_expected.json`, together with the generation code reference and seed.
-- Assertions: `status == "success"`; every recovered loading within the fixture's documented loading tolerance of its planted value; factor correlation within the fixture's documented correlation tolerance; CFI, RMSEA, SRMR within the fixture's documented ranges.
-- These ranges check that the code path recovers planted structure. They are not a pass/fail verdict on any scale.
+- The planted loadings, planted factor correlation, loading tolerance (±0.10) and correlation tolerance (±0.10) are stored in `cfa_expected.json`, labeled "TEST ONLY", together with the generation code reference and seed. The file defines no pass/fail ranges for CFI, RMSEA or SRMR.
+- Assertions: `status == "success"`; every recovered loading within the fixture's documented loading tolerance of its planted value; factor correlation within the fixture's documented correlation tolerance. Nothing else is asserted.
+- CFI, RMSEA, SRMR, chisq and df are printed to stdout for reporting only.
+- These checks show that the code path recovers planted structure (technical rehearsal, not validation). They are not a pass/fail verdict on any scale.
 
 ### HolzingerSwineford1939 reference (`test_holzinger.R`)
 
@@ -420,4 +423,40 @@ PBT does not apply. This service is a thin wrapper around EGAnet, lavaan and igr
 
 ### Unit tests
 
-Small example-based tests for `build_lavaan_model()` (syntax string for 1 and 2 factors), `compute_nmi()` (identical partitions → 1, NA filtering with warning, length mismatch error) and `validate_config()`.
+Small example-based tests for `build_lavaan_model()` (syntax string for 1 and 2 factors), `compute_nmi()` (identical partitions → 1, NA filtering with warning, length mismatch error) and `validate_config()`. The property tests in `test_properties.R` complement, not replace, these example-based unit tests: the examples pin down specific documented behaviors, while the properties sweep the input space for the same three functions.
+
+## Correctness Properties
+
+_A property is a characteristic or behavior that should hold true across all valid executions of a system-essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees._
+
+These three properties apply only to cheap, pure helper functions. EGA, bootEGA, UVA and CFA are not property-tested, for the cost reasons given in Testing Strategy; they remain covered by fixed-seed fixture tests and the lavaan reference test.
+
+### Property 1: compute_nmi() is invariant under relabeling
+
+_For any_ pair of integer community-label vectors of equal length, containing no NA and each containing at least two distinct labels (so entropy is defined), and _for any_ bijective relabeling (a permutation of the label set) applied to `detected`, to `intended`, or to both, `compute_nmi()` returns the same value, up to floating-point tolerance, as on the unrelabeled pair.
+
+**Generator:** Generate a shared length and a small set of distinct integer labels (at least two), then generate `detected` and `intended` as independent samples from that label set at the chosen length, retrying/filtering until each vector has at least two distinct labels. Generate a relabeling as a random permutation of the label set and generate which of `detected`, `intended`, or both it is applied to.
+
+**Validates: Requirements 3.11, 3.12**
+
+### Property 2: validate_config() rejects any config with a null or missing field
+
+_For any_ config built from the eight required fields (`wto_threshold`, `stability_threshold`, `boot_iterations`, `network_method`, `community_algorithm`, `random_seed`, `uva_method`, `bootstrap_type`) where a non-empty subset of those fields is set to `NULL` or removed entirely, and the remaining fields hold arbitrary non-null values, `validate_config()` throws a condition inheriting from `"validation_error"`. The arbitrary non-null values used for the remaining fields are generator output for exercising the code path, not psychometric values, and are never read from or written to `app-config/psychometric-procedure.yaml`.
+
+**Generator:** Start from the full eight-field list, generate a non-empty subset of field names to afflict, and for each afflicted field generate whether it becomes `NULL` or is dropped from the list entirely. Fill every other field with an arbitrary generated scalar (number, string, or boolean) that is never interpreted as a threshold.
+
+**Validates: Requirements 2.1, 2.2, 3.2**
+
+### Property 3: build_lavaan_model() contains every item exactly once
+
+_For any_ model specification with one or more factors with distinct factor names, each assigned a non-empty list of items, where all item IDs across every factor are distinct, drawn from an identifier-safe alphabet, and never equal to any factor name, the syntax string returned by `build_lavaan_model()` contains each item ID exactly once as a whole token (splitting the syntax on `=~`, `+`, whitespace and newlines, so that `item_1` is not miscounted inside `item_10`), and contains no item ID that is not in the specification.
+
+**Generator:** Generate a small number of factor names from an identifier-safe alphabet, deduplicated. For each factor, generate a non-empty list of item IDs from the same alphabet, then deduplicate across all factors combined (regenerating collisions) so every item ID is globally distinct and disjoint from the factor-name set.
+
+**Validates: Requirements 4.4**
+
+**Tooling.** Property tests use the CRAN package `hedgehog` (property-based testing in the spirit of QuickCheck, integrating with `testthat`): each property is one `test_that(...)` block containing `forall(<generator or list of generators>, function(...) expect_*(...))`, run for the package default of 100 generated cases per property, with integrated shrinking of failing examples. Generators are built from the ones documented in the hedgehog vignette — `gen.c`, `gen.element`, `gen.unif`, `gen.sample`, `gen.with`, `gen.and_then`, and the `generate(for (x in gen) ...)` form. Any generator name not in that list must be verified against the installed package (`ls("package:hedgehog")` or the package manual) before use, and the verification recorded in `test_properties.R`. Context7 does not index the R `hedgehog` package, so verification uses the CRAN vignette/manual together with the installed package, not Context7.
+
+The existing custom assertion helpers in `tests/helpers.R` and the runner in `tests/run_all.R` do not use `testthat`. `tests/test_properties.R` is therefore run through `testthat`, and its failed or errored expectations are added to the runner's shared failure counter (see Testing Strategy). A fixed `set.seed()` is documented at the top of `test_properties.R` for reproducibility.
+
+`testthat` and `hedgehog` are test-only dependencies, installed by `install_packages.R` and never loaded by `api.R`.

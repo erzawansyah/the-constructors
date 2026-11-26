@@ -105,10 +105,10 @@ The service runs as a separate process from the main Next.js application and com
 
 1. THE Test_Runner SHALL execute all test files in `r-service/tests/` when invoked with `Rscript tests/run_all.R`
 2. THE Test_Runner SHALL load test fixtures from `r-service/tests/fixtures/` containing known input data and expected outputs
-3. WHEN testing the `/ega` endpoint, THE Test_Runner SHALL verify that removed item IDs match the expected set planted in the fixture
-4. WHEN testing the `/ega` endpoint, THE Test_Runner SHALL verify that NMI values are within ±0.05 of expected values documented in the fixture
+3. WHEN testing the `/ega` endpoint, THE Test_Runner SHALL verify that exactly one item of the planted duplicate pair is present in `uva.removed_items`, and that the removed item IDs (`uva.removed_items` and `bootega.removed_items`) equal the sets recorded in the fixture by the `generate_fixtures.R` run, so that results are reproducible
+4. WHEN testing the `/ega` endpoint, THE Test_Runner SHALL verify that `nmi.initial` and `nmi.final` are each within 0.001 of the values recorded in the fixture by the `generate_fixtures.R` run
 5. WHEN testing the `/cfa` endpoint with planted structure, THE Test_Runner SHALL verify that recovered factor loadings are within ±0.10 of planted values documented in the fixture
-6. WHEN testing the `/cfa` endpoint with planted structure, THE Test_Runner SHALL verify that fit indices (CFI, RMSEA, SRMR) are within documented expected ranges
+6. WHEN testing the `/cfa` endpoint with planted structure, THE Test_Runner SHALL verify that the recovered factor correlation is within ±0.10 of the planted factor correlation documented in the fixture, and SHALL print CFI, RMSEA, and SRMR for reporting without asserting on them
 7. WHEN testing the `/cfa` endpoint with the HolzingerSwineford1939 reference model, THE Test_Runner SHALL verify that chisq, df, CFI, and RMSEA are identical to direct lavaan::cfa() output for the same model
 8. IF any numeric assertion fails, THEN THE Test_Runner SHALL report the expected value, actual value, and tolerance to stdout
 9. WHEN all tests pass, THE Test_Runner SHALL exit with code 0 and print "All tests passed"
@@ -123,13 +123,13 @@ The service runs as a separate process from the main Next.js application and com
 1. THE Fixture SHALL contain an embedding matrix representing a multi-factor structure
 2. THE Fixture SHALL be generated using cluster centers with additive noise and embedded duplicates, using a fixed random seed for reproducibility
 3. THE Fixture SHALL document the generation method: cluster center positions, noise distribution parameters, duplicate item indices, and random seed
-4. THE Fixture SHALL plant near-duplicate items with high weighted topological overlap intended for UVA removal
+4. THE Fixture SHALL plant exactly one pair of near-duplicate items with high weighted topological overlap intended for UVA removal
 5. THE Fixture SHALL plant unstable items with cross-loading behavior intended for bootEGA removal
 6. THE Fixture SHALL document the intended dimension assignment for all items
 7. THE Fixture SHALL record expected NMI values (initial and final) from the generation result, not from arbitrary targets
 8. THE Fixture SHALL be saved as `r-service/tests/fixtures/ega_input.json` and `ega_expected.json`
 9. THE Fixture SHALL include a generation script or inline documentation explaining how to regenerate the fixture
-10. WHEN test assertions run, THE Test_Runner SHALL verify that all embedded duplicate items are removed
+10. WHEN test assertions run, THE Test_Runner SHALL verify that exactly one item of the planted duplicate pair is present in `uva.removed_items`
 11. WHEN test assertions run, THE Test_Runner SHALL verify that nmi.final >= nmi.initial
 
 ### Requirement 8: CFA Test Fixtures
@@ -143,7 +143,7 @@ The service runs as a separate process from the main Next.js application and com
 3. THE Fixture SHALL plant factor loadings with documented values for each factor
 4. THE Fixture SHALL plant a documented factor correlation
 5. THE Fixture SHALL use a 5-point Likert scale (1–5) for all item responses
-6. THE Fixture SHALL document expected fit indices: CFI, RMSEA, and SRMR ranges
+6. THE Fixture SHALL NOT define pass/fail ranges for CFI, RMSEA, or SRMR; these fit indices are reported by the test run only
 7. THE Fixture SHALL be saved as `r-service/tests/fixtures/cfa_input.json` and `cfa_expected.json`
 8. THE Fixture SHALL include documentation of the data generation code and random seed used for reproducibility
 9. THE Test_Runner SHALL include a reference test using the 3-factor HolzingerSwineford1939 dataset from lavaan
