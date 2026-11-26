@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Config Guard — Protect psychometric thresholds",
+      "trigger": "PreToolUse",
+      "matcher": "fs_write|str_replace",
+      "action": {
+        "type": "command",
+        "command": "bash -c 'INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r \".arguments.path // empty\"); if [[ \"$FILE\" == *\"app-config/psychometric-procedure.yaml\"* ]]; then CONTENT=$(echo \"$INPUT\" | jq -r \".arguments.text // .arguments.newStr // empty\"); if echo \"$CONTENT\" | grep -qE \"(i_cvi_threshold|kappa_star_threshold|definitional_correspondence_threshold|distinctiveness_threshold|wto_threshold|stability_threshold|boot_iterations|max_revision_rounds|max_iterations): [0-9]\"; then echo \"{\\\"hookSpecificOutput\\\":{\\\"permissionDecision\\\":\\\"ask\\\",\\\"permissionDecisionReason\\\":\\\"You are attempting to set a psychometric threshold value in app-config/psychometric-procedure.yaml. Per project rules (00-project-rules.md), threshold values must be owner decisions, not AI-generated estimates. If the owner has decided this value, proceed. Otherwise, leave as null and ask the owner.\\\"}}\" >&2; exit 2; fi; fi; exit 0'"
+      }
+    }
+  ]
+}

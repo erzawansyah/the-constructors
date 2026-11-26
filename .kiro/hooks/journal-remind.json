@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Journal Reminder",
+      "trigger": "Stop",
+      "action": {
+        "type": "agent",
+        "prompt": "Session complete. If significant progress, decisions, or discoveries were made, consider updating notes/kiro-journal.md with a brief entry documenting what happened and why. Use the journal format from development-journal.md steering file."
+      }
+    }
+  ]
+}
