@@ -121,7 +121,7 @@ r-service/
 
 ### Route handler pattern
 
-Both POST handlers take `(req, res)`, generate a UUID `request_id`, record the start time, and wrap the pipeline in `tryCatch`. The HTTP status is chosen by condition class only (see Error Handling).
+Both POST handlers take `(req, res)`, generate a UUID `request_id`, record the start time, and wrap the pipeline in `tryCatch`. The pipeline call itself runs inside `withCallingHandlers`, which collects the message of every warning raised by the pipeline and muffles it, so the messages reach the request's JSON log entry (`warnings` array) instead of plain stderr text. The HTTP status is chosen by condition class only (see Error Handling).
 
 ### `/ega` flow
 
@@ -133,7 +133,7 @@ run_ega(data, config)                          # set.seed(as.numeric(random_seed
 run_uva_loop(data, config)                     # -> removed_items, removed_wto_scores, retained_data
 run_bootega_loop(data, config)                 # -> removed_items, removed_stability_scores, retained_data, stability_per_item
 compute_nmi(detected, intended)                # -> numeric
-log_ega_execution(body, result, request_id, duration_ms)
+log_ega_execution(body, result, request_id, duration_ms, warnings)
 ```
 
 1. **Parse JSON.** `jsonlite::fromJSON(req$postBody)`. A parse failure is re-thrown as a `validation_error` with message `"Invalid JSON: <parser message>"`.
@@ -146,7 +146,7 @@ log_ega_execution(body, result, request_id, duration_ms)
    - Otherwise `removed_this_pass <- setdiff(colnames(data), colnames(result$reduced_data))`. `result$keep_remove` is never read, because the probe showed it is inconsistent with `reduced_data`.
    - Pass `result$reduced_data` (a matrix with item IDs as `colnames`) to the next pass, so column names stay intact.
    - Repeat until a pass removes nothing.
-   - **`removed_wto_scores`.** EGAnet has no per-item wTO score, so the value is derived from the same pass's result. For each removed item `r`: its partners are the entries of `result$redundant[[r]]` (named list: name = target item, value = character vector of items redundant with it) together with the names of any entries whose vector contains `r`. From `result$wto$pairwise` (columns `node_i`, `node_j`, `wto`) take the rows pairing `r` with one of its partners. Not all pairs are present in `$wto$pairwise`, so partners without a row are skipped. The partner with the highest `wto` becomes `redundant_with`, and that value becomes `wto`. If no partner has a row, `redundant_with` and `wto` are `null` and a warning is logged. A pass can remove an item whose partners were removed in the same pass, so the lookup uses that pass's `$redundant` and `$wto$pairwise` (computed on that pass's input), not the final retained set. Each entry is stored as `{ "redundant_with": <item_id>, "wto": <number> }`.
+   - **`removed_wto_scores`.** EGAnet has no per-item wTO score, so the value is derived from the same pass's result. For each removed item `r`: its partners are the entries of `result$redundant[[r]]` (named list: name = target item, value = character vector of items redundant with it) together with the names of any entries whose vector contains `r`. From `result$wto$pairwise` (columns `node_i`, `node_j`, `wto`) take the rows pairing `r` with one of its partners. Not all pairs are present in `$wto$pairwise`, so partners without a row are skipped. The partner with the highest `wto` becomes `redundant_with`, and that value becomes `wto`. If no partner has a row, `redundant_with` and `wto` are `null` and the warning is collected into the log entry's `warnings` array. A pass can remove an item whose partners were removed in the same pass, so the lookup uses that pass's `$redundant` and `$wto$pairwise` (computed on that pass's input), not the final retained set. Each entry is stored as `{ "redundant_with": <item_id>, "wto": <number> }`.
 7. **bootEGA loop.** Call `EGAnet::bootEGA` on the UVA-retained data with `model`, `algorithm`, `iter`, `type` from config, `seed = as.numeric(config$random_seed)` (a double, because `bootEGA` rejects integer seeds), and the fixed arguments `ncores = 1`, `plot.itemStability = FALSE`, `verbose = FALSE`. Obtain per-item stability with `itemStability(boot, IS.plot = FALSE)$item.stability$empirical.dimensions` (a named numeric vector, names = item IDs; see `PROBE_NOTES.md` 3.5). Only this vector is kept: the `plot` element (a large ggplot object) is never stored, logged or serialized. Remove every item with stability below `stability_threshold`, record its score in `removed_stability_scores` (the stability in the pass that removed it), and repeat until all remaining items are stable. The last pass's scores become `stability_per_item`.
 8. **Final NMI.** Call `run_ega()` on the retained data (again seeded immediately before the `EGA` call) and compute `nmi.final` against `intended_dimensions` subset to the retained items (matched by item ID), again `+ 1`.
 9. **NA handling in NMI.** `compute_nmi()` requires equal-length vectors, drops positions where either `detected` (`wc`) or `intended` is NA, warns with the count dropped, errors if nothing remains, then calls `igraph::compare(detected, intended, method = "nmi")`.
@@ -162,7 +162,7 @@ run_cfa(model_syntax, response_df, item_ids, ordinal)   # -> fit, converged, war
 extract_fit_indices(fit, ordinal)                       # -> named list (scaled/robust or standard variant)
 extract_loadings(fit, model_specification)              # -> nested list
 extract_factor_correlations(fit, model_specification)   # -> named list
-log_cfa_execution(body, result, request_id, duration_ms)
+log_cfa_execution(body, result, request_id, duration_ms, warnings)
 ```
 
 1. **Parse JSON.** Same as `/ega`: parse failure → `validation_error`.
@@ -250,18 +250,20 @@ After any EGAnet or lavaan upgrade, rerun the probe and update `PROBE_NOTES.md`.
 ### Logging (`logging/logger.R`)
 
 ```r
-log_ega_execution(body, result, request_id, duration_ms)
-log_cfa_execution(body, result, request_id, duration_ms)
-log_error(endpoint, error, request_body, request_id)
+log_ega_execution(body, result, request_id, duration_ms, warnings = character(0))
+log_cfa_execution(body, result, request_id, duration_ms, warnings = character(0))
+log_error(endpoint, error, request_body, request_id, warnings = character(0))
 ```
 
 - One JSON object per line (`jsonlite::toJSON(auto_unbox = TRUE, na = "null", digits = NA)`). This is the same serialization as the HTTP responses, so numbers in logs equal numbers in responses (no 4-digit rounding, `NA` as `null`).
 - stdout for successful operations, stderr for errors.
 - Common fields: `timestamp` (ISO 8601), `request_id`, `endpoint`, `execution_duration_ms`.
-- `/ega`: `item_count`, all eight config values, `removed_uva_items` and, for each, its `redundant_with` partner and `wto` score (the same entries as `uva.removed_wto_scores`), `removed_bootega_items` and, for each, its stability score (the same entries as `bootega.removed_stability_scores`), `retained_count`, `nmi_initial`, `nmi_final`.
-- `/cfa`: `persona_count`, `item_count`, `estimator`, `fit_variant`, `factor_count`, `cfi`, `rmsea`. `estimator` is `"WLSMV"` when `ordinal` is true and `"ML"` when false, taken from the wrapper's own choice in `run_cfa()`, not from `lavInspect(fit, "options")$estimator`, which reports `"DWLS"`.
+- `/ega`: `item_count`, all eight config values, `removed_uva_items` and, for each, its `redundant_with` partner and `wto` score (the same entries as `uva.removed_wto_scores`), `removed_bootega_items` and, for each, its stability score (the same entries as `bootega.removed_stability_scores`), `retained_count`, `nmi_initial`, `nmi_final`, `warnings`.
+- `/cfa`: `persona_count`, `item_count`, `estimator`, `fit_variant`, `factor_count`, `cfi`, `rmsea`. `estimator` is `"WLSMV"` when `ordinal` is true and `"ML"` when false, taken from the wrapper's own choice in `run_cfa()`, not from `lavInspect(fit, "options")$estimator`, which reports `"DWLS"`; `cfi`, `rmsea` and `warnings` follow.
+- `warnings`: JSON array of strings, `[]` when there are none, and still an array when there is exactly one message. `make_handler()` collects the message of every warning raised while the pipeline runs (for example the `run_uva_loop()` warning for a removed item with no `$wto$pairwise` row, or the `compute_nmi()` NA-drop warning) with `withCallingHandlers`, muffles it, and passes the vector to the logger as a named `warnings` argument. A custom `log_fn` that declares neither `warnings` nor `...` is called with the four original arguments. The same array is written in the error entry, holding the warnings collected before the failure.
+- The HTTP response contracts are unchanged: `warnings` is a log field only and is not added to the `/ega` or `/cfa` responses. The `warnings` / `lavaan_warnings` that `run_cfa()` captures stay in the `/cfa` response; they are muffled inside `run_cfa()`, so they do not appear in the log's `warnings` array.
 - Validation errors (including a rejected `uva_method`) are logged with the full request context, minus the `embeddings` / `responses` matrices.
-- Errors: `level: "error"`, `request_id`, `endpoint`, `error_message`, and request context with `embeddings` / `responses` matrices excluded.
+- Errors: `level: "error"`, `request_id`, `endpoint`, `error_message`, `warnings`, and request context with `embeddings` / `responses` matrices excluded.
 
 ## Data Models
 
@@ -413,6 +415,9 @@ All numbers and the threshold text in `reason` are illustrative, not thresholds;
 
 - `validate_config()`, `validate_ega_request()`, `validate_cfa_request()` and the JSON-parse wrapper throw conditions of class `validation_error`.
 - Any other error (EGAnet, lavaan, igraph, matrix operations) is a computation error.
+- If UVA retains 0 items, `run_bootega_loop()` raises a plain `stop()` (HTTP 500) before calling bootEGA, because there is nothing to analyze.
+- If every remaining item has stability below `stability_threshold` in a bootEGA pass, `run_bootega_loop()` raises a plain `stop()` (HTTP 500) with the pass number, instead of removing all items.
+- If any item has `NA` stability in a bootEGA pass (no community assignment in the empirical structure), `run_bootega_loop()` raises a plain `stop()` (HTTP 500) listing the items. Handling of `NA` stability is not defined, so the message ends with "owner decision required".
 - Every error response includes a UUID `request_id` (`uuid::UUIDgenerate()`), also written to the stderr log.
 - Messages include the R error text but never a stack trace.
 - Error bodies are serialized with the same serializer as successes (`auto_unbox = TRUE`, `na = "null"`, `digits = NA`).
@@ -442,6 +447,9 @@ Example messages:
 - `"Invalid JSON: <parser message>"`
 - `"item_ids length (10) does not match embeddings rows (12)"`
 - `"Items in model_specification not found in item_ids: item_013"`
+- `"bootEGA has no items to analyze: UVA retained 0 items. Review the item pool and config.wto_threshold."` (HTTP 500)
+- `"bootEGA pass 2: all 5 remaining item(s) have stability < 0.75; no items would be retained. Review the item pool or config.stability_threshold."` (HTTP 500; form `bootEGA pass <n>: all <k> remaining item(s) have stability < <threshold>; ...`, numbers illustrative)
+- `"bootEGA pass 1: stability is NA for item(s): item_005, item_009 (no community assignment in the empirical structure). Handling of NA stability is not defined; owner decision required."` (HTTP 500)
 
 ## Testing Strategy
 

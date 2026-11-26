@@ -43,6 +43,193 @@
         "chatSessionId": "sess_6b7710c1-8ddc-4e22-b7f7-4cbad06731b6",
         "timestamp": 1795699198680
       }
+    ],
+    "3.1 Implement `r-service/utils/conditions.R` and `r-service/logging/logger.R`": [
+      {
+        "executionId": "8c5cf17b-3315-4ab6-87ea-fd51fb8fd0ec",
+        "chatSessionId": "sess_2db5834c-c8ec-474f-a476-7e61f10ace2e",
+        "timestamp": 1795702008617
+      },
+      {
+        "executionId": "8c5cf17b-3315-4ab6-87ea-fd51fb8fd0ec",
+        "chatSessionId": "sess_2db5834c-c8ec-474f-a476-7e61f10ace2e",
+        "timestamp": 1795702231992
+      }
+    ],
+    "3.2 Implement `r-service/config/loader.R`": [
+      {
+        "executionId": "8c5cf17b-3315-4ab6-87ea-fd51fb8fd0ec",
+        "chatSessionId": "sess_2db5834c-c8ec-474f-a476-7e61f10ace2e",
+        "timestamp": 1795702232095
+      },
+      {
+        "executionId": "8c5cf17b-3315-4ab6-87ea-fd51fb8fd0ec",
+        "chatSessionId": "sess_2db5834c-c8ec-474f-a476-7e61f10ace2e",
+        "timestamp": 1795702383467
+      }
+    ],
+    "3.3 Implement `r-service/validation/request_validator.R`": [
+      {
+        "executionId": "8c5cf17b-3315-4ab6-87ea-fd51fb8fd0ec",
+        "chatSessionId": "sess_2db5834c-c8ec-474f-a476-7e61f10ace2e",
+        "timestamp": 1795702232255
+      },
+      {
+        "executionId": "8c5cf17b-3315-4ab6-87ea-fd51fb8fd0ec",
+        "chatSessionId": "sess_2db5834c-c8ec-474f-a476-7e61f10ace2e",
+        "timestamp": 1795702383552
+      }
+    ],
+    "3. Implement shared utilities and validation": [
+      {
+        "executionId": "8c5cf17b-3315-4ab6-87ea-fd51fb8fd0ec",
+        "chatSessionId": "sess_2db5834c-c8ec-474f-a476-7e61f10ace2e",
+        "timestamp": 1795702383652
+      }
+    ],
+    "4.1 Implement `r-service/ega/nmi.R`": [
+      {
+        "executionId": "0a610e1b-c7e9-44dd-8843-fcd46f82f284",
+        "chatSessionId": "sess_5e45a509-cd60-456b-b3d4-7a0fb2da2edc",
+        "timestamp": 1795702413098
+      },
+      {
+        "executionId": "0a610e1b-c7e9-44dd-8843-fcd46f82f284",
+        "chatSessionId": "sess_5e45a509-cd60-456b-b3d4-7a0fb2da2edc",
+        "timestamp": 1795702780723
+      }
+    ],
+    "4.2 Implement `r-service/ega/uva.R`": [
+      {
+        "executionId": "0a610e1b-c7e9-44dd-8843-fcd46f82f284",
+        "chatSessionId": "sess_5e45a509-cd60-456b-b3d4-7a0fb2da2edc",
+        "timestamp": 1795702413212
+      },
+      {
+        "executionId": "0a610e1b-c7e9-44dd-8843-fcd46f82f284",
+        "chatSessionId": "sess_5e45a509-cd60-456b-b3d4-7a0fb2da2edc",
+        "timestamp": 1795702781919
+      }
+    ],
+    "4.3 Implement `r-service/ega/bootega.R`": [
+      {
+        "executionId": "0a610e1b-c7e9-44dd-8843-fcd46f82f284",
+        "chatSessionId": "sess_5e45a509-cd60-456b-b3d4-7a0fb2da2edc",
+        "timestamp": 1795702413819
+      },
+      {
+        "executionId": "0a610e1b-c7e9-44dd-8843-fcd46f82f284",
+        "chatSessionId": "sess_5e45a509-cd60-456b-b3d4-7a0fb2da2edc",
+        "timestamp": 1795702782207
+      }
+    ],
+    "4.4 Implement `r-service/ega/pipeline.R`": [
+      {
+        "executionId": "0a610e1b-c7e9-44dd-8843-fcd46f82f284",
+        "chatSessionId": "sess_5e45a509-cd60-456b-b3d4-7a0fb2da2edc",
+        "timestamp": 1795702788020
+      },
+      {
+        "executionId": "0a610e1b-c7e9-44dd-8843-fcd46f82f284",
+        "chatSessionId": "sess_5e45a509-cd60-456b-b3d4-7a0fb2da2edc",
+        "timestamp": 1795702941584
+      }
+    ],
+    "4. Implement EGA wrappers following the probe output": [
+      {
+        "executionId": "0a610e1b-c7e9-44dd-8843-fcd46f82f284",
+        "chatSessionId": "sess_5e45a509-cd60-456b-b3d4-7a0fb2da2edc",
+        "timestamp": 1795702941795
+      }
+    ],
+    "5.1 Implement `r-service/cfa/model_builder.R`": [
+      {
+        "executionId": "eac0c8b3-3fbb-4a3f-8547-ac7cf30caf35",
+        "chatSessionId": "sess_f29d6c35-6ad3-4ec2-a582-2b266532d7f9",
+        "timestamp": 1795702974206
+      },
+      {
+        "executionId": "eac0c8b3-3fbb-4a3f-8547-ac7cf30caf35",
+        "chatSessionId": "sess_f29d6c35-6ad3-4ec2-a582-2b266532d7f9",
+        "timestamp": 1795703287967
+      }
+    ],
+    "5.2 Implement `r-service/cfa/estimator.R`": [
+      {
+        "executionId": "eac0c8b3-3fbb-4a3f-8547-ac7cf30caf35",
+        "chatSessionId": "sess_f29d6c35-6ad3-4ec2-a582-2b266532d7f9",
+        "timestamp": 1795702974946
+      },
+      {
+        "executionId": "eac0c8b3-3fbb-4a3f-8547-ac7cf30caf35",
+        "chatSessionId": "sess_f29d6c35-6ad3-4ec2-a582-2b266532d7f9",
+        "timestamp": 1795703288179
+      }
+    ],
+    "5.3 Implement `r-service/cfa/extractor.R`": [
+      {
+        "executionId": "eac0c8b3-3fbb-4a3f-8547-ac7cf30caf35",
+        "chatSessionId": "sess_f29d6c35-6ad3-4ec2-a582-2b266532d7f9",
+        "timestamp": 1795702975280
+      },
+      {
+        "executionId": "eac0c8b3-3fbb-4a3f-8547-ac7cf30caf35",
+        "chatSessionId": "sess_f29d6c35-6ad3-4ec2-a582-2b266532d7f9",
+        "timestamp": 1795703288363
+      }
+    ],
+    "5.4 Implement `r-service/cfa/pipeline.R`": [
+      {
+        "executionId": "eac0c8b3-3fbb-4a3f-8547-ac7cf30caf35",
+        "chatSessionId": "sess_f29d6c35-6ad3-4ec2-a582-2b266532d7f9",
+        "timestamp": 1795703294776
+      },
+      {
+        "executionId": "eac0c8b3-3fbb-4a3f-8547-ac7cf30caf35",
+        "chatSessionId": "sess_f29d6c35-6ad3-4ec2-a582-2b266532d7f9",
+        "timestamp": 1795703433989
+      }
+    ],
+    "5. Implement CFA wrappers following the probe output": [
+      {
+        "executionId": "eac0c8b3-3fbb-4a3f-8547-ac7cf30caf35",
+        "chatSessionId": "sess_f29d6c35-6ad3-4ec2-a582-2b266532d7f9",
+        "timestamp": 1795703434220
+      }
+    ],
+    "6. Implement `r-service/api.R`": [
+      {
+        "executionId": "eb4002af-b4e6-4303-ae9a-20193527d27a",
+        "chatSessionId": "sess_6108d09e-1328-4bff-99d6-05ed58128bda",
+        "timestamp": 1795703465334
+      },
+      {
+        "executionId": "eb4002af-b4e6-4303-ae9a-20193527d27a",
+        "chatSessionId": "sess_6108d09e-1328-4bff-99d6-05ed58128bda",
+        "timestamp": 1795706016654
+      }
+    ],
+    "7. Checkpoint: wrappers load": [
+      {
+        "executionId": "ceae9d68-4d6c-4c38-990d-b46e6867957d",
+        "chatSessionId": "sess_c7b167ad-ded0-4d5c-bec6-7c92f6d25bbf",
+        "timestamp": 1795706044108
+      },
+      {
+        "executionId": "ceae9d68-4d6c-4c38-990d-b46e6867957d",
+        "chatSessionId": "sess_c7b167ad-ded0-4d5c-bec6-7c92f6d25bbf",
+        "timestamp": 1795706159779
+      },
+      {
+        "executionId": "68c884cc-fe22-4d0e-afb6-4ec5876680fa",
+        "chatSessionId": "sess_c7b167ad-ded0-4d5c-bec6-7c92f6d25bbf",
+        "timestamp": 1795708476838
+      },
+      {
+        "executionId": "68c884cc-fe22-4d0e-afb6-4ec5876680fa",
+        "chatSessionId": "sess_c7b167ad-ded0-4d5c-bec6-7c92f6d25bbf",
+        "timestamp": 1795708637629
+      }
     ]
   }
 }
