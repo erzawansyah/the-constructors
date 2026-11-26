@@ -41,3 +41,6 @@ notes/
 # env (all variants, keep example)
 .env*
 !.env.example
+
+# R plot output
+Rplots.pdf

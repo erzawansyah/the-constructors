@@ -1,0 +1,3252 @@
+
+==========================================================================================
+0. R and package versions
+==========================================================================================
+R version 4.6.1 (2026-06-24 ucrt) 
+plumber    1.3.3
+EGAnet     2.4.1
+lavaan     0.6.21
+igraph     2.3.3
+jsonlite   2.0.0
+uuid       1.2.2
+
+==========================================================================================
+1. args() / formals() of UVA, EGA, bootEGA, itemStability
+==========================================================================================
+
+--- EGAnet::UVA ---
+names(formals()):
+ [1] "data"          "network"       "n"             "key"           "uva.method"    "cut.off"      
+ [7] "reduce"        "reduce.method" "auto"          "verbose"       "..."          
+args():
+function (data = NULL, network = NULL, n = NULL, key = NULL, 
+    uva.method = c("MBR", "EJP"), cut.off = 0.25, reduce = TRUE, 
+    reduce.method = c("latent", "mean", "remove", "sum"), auto = TRUE, 
+    verbose = FALSE, ...) 
+NULL
+formals() defaults:
+Dotted pair list of 11
+ $ data         : NULL
+ $ network      : NULL
+ $ n            : NULL
+ $ key          : NULL
+ $ uva.method   : language c("MBR", "EJP")
+ $ cut.off      : num 0.25
+ $ reduce       : logi TRUE
+ $ reduce.method: language c("latent", "mean", "remove", "sum")
+ $ auto         : logi TRUE
+ $ verbose      : logi FALSE
+ $ ...          : symbol 
+
+--- EGAnet::EGA ---
+names(formals()):
+ [1] "data"       "n"          "corr"       "na.data"    "model"      "algorithm"  "uni.method"
+ [8] "plot.EGA"   "verbose"    "..."       
+args():
+function (data, n = NULL, corr = c("auto", "cor_auto", "cosine", 
+    "pearson", "spearman"), na.data = c("pairwise", "listwise"), 
+    model = c("BGGM", "glasso", "TMFG"), algorithm = c("leiden", 
+        "louvain", "walktrap"), uni.method = c("expand", "LE", 
+        "louvain"), plot.EGA = TRUE, verbose = FALSE, ...) 
+NULL
+formals() defaults:
+Dotted pair list of 10
+ $ data      : symbol 
+ $ n         : NULL
+ $ corr      : language c("auto", "cor_auto", "cosine", "pearson", "spearman")
+ $ na.data   : language c("pairwise", "listwise")
+ $ model     : language c("BGGM", "glasso", "TMFG")
+ $ algorithm : language c("leiden", "louvain", "walktrap")
+ $ uni.method: language c("expand", "LE", "louvain")
+ $ plot.EGA  : logi TRUE
+ $ verbose   : logi FALSE
+ $ ...       : symbol 
+
+--- EGAnet::bootEGA ---
+names(formals()):
+ [1] "data"                  "n"                     "corr"                  "na.data"              
+ [5] "model"                 "algorithm"             "uni.method"            "iter"                 
+ [9] "type"                  "ncores"                "EGA.type"              "plot.itemStability"   
+[13] "typicalStructure"      "plot.typicalStructure" "seed"                  "verbose"              
+[17] "..."                  
+args():
+function (data, n = NULL, corr = c("auto", "cor_auto", "cosine", 
+    "pearson", "spearman"), na.data = c("pairwise", "listwise"), 
+    model = c("BGGM", "glasso", "TMFG"), algorithm = c("leiden", 
+        "louvain", "walktrap"), uni.method = c("expand", "LE", 
+        "louvain"), iter = 500, type = c("parametric", "resampling"), 
+    ncores, EGA.type = c("EGA", "EGA.fit", "hierEGA", "riEGA"), 
+    plot.itemStability = TRUE, typicalStructure = FALSE, plot.typicalStructure = FALSE, 
+    seed = NULL, verbose = TRUE, ...) 
+NULL
+formals() defaults:
+Dotted pair list of 17
+ $ data                 : symbol 
+ $ n                    : NULL
+ $ corr                 : language c("auto", "cor_auto", "cosine", "pearson", "spearman")
+ $ na.data              : language c("pairwise", "listwise")
+ $ model                : language c("BGGM", "glasso", "TMFG")
+ $ algorithm            : language c("leiden", "louvain", "walktrap")
+ $ uni.method           : language c("expand", "LE", "louvain")
+ $ iter                 : num 500
+ $ type                 : language c("parametric", "resampling")
+ $ ncores               : symbol 
+ $ EGA.type             : language c("EGA", "EGA.fit", "hierEGA", "riEGA")
+ $ plot.itemStability   : logi TRUE
+ $ typicalStructure     : logi FALSE
+ $ plot.typicalStructure: logi FALSE
+ $ seed                 : NULL
+ $ verbose              : logi TRUE
+ $ ...                  : symbol 
+
+--- EGAnet::itemStability ---
+names(formals()):
+[1] "bootega.obj" "IS.plot"     "structure"   "..."        
+args():
+function (bootega.obj, IS.plot = TRUE, structure = NULL, ...) 
+NULL
+formals() defaults:
+Dotted pair list of 4
+ $ bootega.obj: symbol 
+ $ IS.plot    : logi TRUE
+ $ structure  : NULL
+ $ ...        : symbol 
+
+==========================================================================================
+2a. Sample embedding data (items x dimensions, then transposed)
+==========================================================================================
+embeddings (items x dims):  12 x 30 
+transposed (dims x items):  30 x 12 
+intended_dimensions (0-indexed):  0 0 0 0 1 1 1 1 2 2 2 2 
+
+==========================================================================================
+3a. EGAnet::UVA, reduce = FALSE (raw wTO fields)
+==========================================================================================
+
+--- UVA (reduce = FALSE) result ---
+class: UVA
+names: [1] "redundant" "network"   "wto"      
+str:
+List of 3
+ $ redundant:List of 6
+  ..$ item_011: chr [1:3] "item_009" "item_010" "item_012"
+  ..$ item_007: chr [1:2] "item_005" "item_006"
+  ..$ item_005: chr "item_006"
+  ..$ item_012: chr "item_009"
+  ..$ item_001: chr "item_002"
+  ..$ item_003: chr "item_004"
+ $ network  : num [1:12, 1:12] 0 0.668 0.173 0.159 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..- attr(*, "methods")=List of 9
+  .. ..$ corr            : chr "auto"
+  .. ..$ model.selection : chr "ebic"
+  .. ..$ lambda          : num 0.105
+  .. ..$ gamma           : num 0.5
+  .. ..$ lambda.min.ratio: num 0.1
+  .. ..$ nlambda         : num 100
+  .. ..$ criterion       : num 256
+  .. ..$ model           : chr "glasso"
+  .. ..$ na.data         : chr "pairwise"
+ $ wto      :List of 4
+  ..$ matrix      : num [1:12, 1:12] 0 0.52898 0.22595 0.20369 0.00232 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..$ pairwise    :'data.frame':	65 obs. of  3 variables:
+  .. ..$ node_i: chr [1:65] "item_001" "item_005" "item_006" "item_003" ...
+  .. ..$ node_j: chr [1:65] "item_002" "item_007" "item_007" "item_004" ...
+  .. ..$ wto   : num [1:65] 0.529 0.455 0.398 0.384 0.306 ...
+  ..$ descriptives: Named num [1:10] 0.09 0.129 0 0.529 0.017 0.016 0.047 0.094 0.421 0.505
+  .. ..- attr(*, "names")= chr [1:10] "mean" "sd" "minimum" "maximum" ...
+  ..$ cut_off     : num 0.25
+ - attr(*, "methods")=List of 3
+  ..$ uva.method: chr "mbr"
+  ..$ cut.off   : num 0.25
+  ..$ reduce    : logi FALSE
+ - attr(*, "class")= chr "UVA"
+
+--- UVA$redundant ---
+class: list
+names: [1] "item_011" "item_007" "item_005" "item_012" "item_001" "item_003"
+str:
+List of 6
+ $ item_011: chr [1:3] "item_009" "item_010" "item_012"
+ $ item_007: chr [1:2] "item_005" "item_006"
+ $ item_005: chr "item_006"
+ $ item_012: chr "item_009"
+ $ item_001: chr "item_002"
+ $ item_003: chr "item_004"
+
+--- UVA$network ---
+class: matrix, array
+names: NULL
+str:
+ num [1:12, 1:12] 0 0.668 0.173 0.159 0 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+ - attr(*, "methods")=List of 9
+  ..$ corr            : chr "auto"
+  ..$ model.selection : chr "ebic"
+  ..$ lambda          : num 0.105
+  ..$ gamma           : num 0.5
+  ..$ lambda.min.ratio: num 0.1
+  ..$ nlambda         : num 100
+  ..$ criterion       : num 256
+  ..$ model           : chr "glasso"
+  ..$ na.data         : chr "pairwise"
+
+--- UVA$wto ---
+class: list
+names: [1] "matrix"       "pairwise"     "descriptives" "cut_off"     
+str:
+List of 4
+ $ matrix      : num [1:12, 1:12] 0 0.52898 0.22595 0.20369 0.00232 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+ $ pairwise    :'data.frame':	65 obs. of  3 variables:
+  ..$ node_i: chr [1:65] "item_001" "item_005" "item_006" "item_003" ...
+  ..$ node_j: chr [1:65] "item_002" "item_007" "item_007" "item_004" ...
+  ..$ wto   : num [1:65] 0.529 0.455 0.398 0.384 0.306 ...
+ $ descriptives: Named num [1:10] 0.09 0.129 0 0.529 0.017 0.016 0.047 0.094 0.421 0.505
+  ..- attr(*, "names")= chr [1:10] "mean" "sd" "minimum" "maximum" ...
+ $ cut_off     : num 0.25
+
+==========================================================================================
+3a-2. EGAnet::UVA, uva.method = 'EJP', reduce = FALSE (compare field names)
+==========================================================================================
+
+--- UVA (EJP, reduce = FALSE) result ---
+class: UVA
+names: [1] "redundancy" "Methods"   
+str:
+List of 2
+ $ redundancy:List of 10
+  ..$ redundant   :List of 6
+  .. ..$ item_011: chr [1:3] "item_012" "item_009" "item_010"
+  .. ..$ item_005: chr [1:2] "item_006" "item_007"
+  .. ..$ item_001: chr "item_002"
+  .. ..$ item_003: chr "item_004"
+  .. ..$ item_006: chr "item_007"
+  .. ..$ item_009: chr "item_012"
+  ..$ data        : num [1:30, 1:12] -0.04386 -0.5637 -1.56645 0.00327 -0.06569 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ correlation : num [1:12, 1:12] 1 0.998 0.885 0.868 0.15 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ weights     : num [1:12, 1:12] 0 0.52898 0.22595 0.20369 0.00232 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ network     : num [1:12, 1:12] 0 0.668 0.173 0.159 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 7
+  ..$ descriptives:List of 2
+  .. ..$ basic          : num [1, 1:9] 0.09 0.129 0.017 0.016 0.047 0.094 0 0.529 0.25
+  .. .. ..- attr(*, "dimnames")=List of 2
+  .. ..$ centralTendency: num [1:65, 1:3] 0.529 0.455 0.398 0.384 0.306 0.269 0.262 0.261 0.257 0.244 ...
+  .. .. ..- attr(*, "dimnames")=List of 2
+  ..$ method      : chr "wto"
+  ..$ model       : chr "glasso"
+  ..$ type        : chr "threshold"
+  ..$ key         : Named chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. ..- attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..- attr(*, "class")= chr "node.redundant"
+ $ Methods   :List of 4
+  ..$ method: chr "wto"
+  ..$ type  : chr "threshold"
+  ..$ sig   : num 0.25
+  ..$ auto  : logi TRUE
+ - attr(*, "class")= chr "UVA"
+
+==========================================================================================
+3a-3. UVA reduced data when nothing is redundant (cut.off = 0.99)
+==========================================================================================
+names:  redundant, network, wto 
+is.null(reduced_data):  TRUE 
+is.null(keep_remove):  TRUE 
+length(redundant):  0 
+
+==========================================================================================
+3b. EGAnet::UVA, reduce = TRUE, reduce.method = 'remove', auto = TRUE
+==========================================================================================
+
+--- UVA (reduce = TRUE) result ---
+class: UVA
+names: [1] "reduced_data" "redundant"    "network"      "wto"          "keep_remove" 
+str:
+List of 5
+ $ reduced_data: num [1:30, 1:5] -0.04386 -0.5637 -1.56645 0.00327 -0.06569 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : NULL
+  .. ..$ : chr [1:5] "item_001" "item_004" "item_007" "item_008" ...
+ $ redundant   :List of 6
+  ..$ item_011: chr [1:3] "item_009" "item_010" "item_012"
+  ..$ item_007: chr [1:2] "item_005" "item_006"
+  ..$ item_005: chr "item_006"
+  ..$ item_012: chr "item_009"
+  ..$ item_001: chr "item_002"
+  ..$ item_003: chr "item_004"
+ $ network     : num [1:12, 1:12] 0 0.668 0.173 0.159 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..- attr(*, "methods")=List of 9
+  .. ..$ corr            : chr "auto"
+  .. ..$ model.selection : chr "ebic"
+  .. ..$ lambda          : num 0.105
+  .. ..$ gamma           : num 0.5
+  .. ..$ lambda.min.ratio: num 0.1
+  .. ..$ nlambda         : num 100
+  .. ..$ criterion       : num 256
+  .. ..$ model           : chr "glasso"
+  .. ..$ na.data         : chr "pairwise"
+ $ wto         :List of 4
+  ..$ matrix      : num [1:12, 1:12] 0 0.52898 0.22595 0.20369 0.00232 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..$ pairwise    :'data.frame':	65 obs. of  3 variables:
+  .. ..$ node_i: chr [1:65] "item_001" "item_005" "item_006" "item_003" ...
+  .. ..$ node_j: chr [1:65] "item_002" "item_007" "item_007" "item_004" ...
+  .. ..$ wto   : num [1:65] 0.529 0.455 0.398 0.384 0.306 ...
+  ..$ descriptives: Named num [1:10] 0.09 0.129 0 0.529 0.017 0.016 0.047 0.094 0.421 0.505
+  .. ..- attr(*, "names")= chr [1:10] "mean" "sd" "minimum" "maximum" ...
+  ..$ cut_off     : num 0.25
+ $ keep_remove :List of 2
+  ..$ keep  : chr [1:6] "item_001" "item_004" "item_006" "item_007" ...
+  ..$ remove: chr [1:9] "item_002" "item_003" "item_005" "item_005" ...
+ - attr(*, "methods")=List of 3
+  ..$ uva.method: chr "mbr"
+  ..$ cut.off   : num 0.25
+  ..$ reduce    : logi TRUE
+ - attr(*, "class")= chr "UVA"
+
+--- UVA$reduced_data ---
+class: matrix, array
+names: NULL
+str:
+ num [1:30, 1:5] -0.04386 -0.5637 -1.56645 0.00327 -0.06569 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : NULL
+  ..$ : chr [1:5] "item_001" "item_004" "item_007" "item_008" ...
+
+--- UVA$redundant ---
+class: list
+names: [1] "item_011" "item_007" "item_005" "item_012" "item_001" "item_003"
+str:
+List of 6
+ $ item_011: chr [1:3] "item_009" "item_010" "item_012"
+ $ item_007: chr [1:2] "item_005" "item_006"
+ $ item_005: chr "item_006"
+ $ item_012: chr "item_009"
+ $ item_001: chr "item_002"
+ $ item_003: chr "item_004"
+
+--- UVA$network ---
+class: matrix, array
+names: NULL
+str:
+ num [1:12, 1:12] 0 0.668 0.173 0.159 0 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+ - attr(*, "methods")=List of 9
+  ..$ corr            : chr "auto"
+  ..$ model.selection : chr "ebic"
+  ..$ lambda          : num 0.105
+  ..$ gamma           : num 0.5
+  ..$ lambda.min.ratio: num 0.1
+  ..$ nlambda         : num 100
+  ..$ criterion       : num 256
+  ..$ model           : chr "glasso"
+  ..$ na.data         : chr "pairwise"
+
+--- UVA$wto ---
+class: list
+names: [1] "matrix"       "pairwise"     "descriptives" "cut_off"     
+str:
+List of 4
+ $ matrix      : num [1:12, 1:12] 0 0.52898 0.22595 0.20369 0.00232 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+ $ pairwise    :'data.frame':	65 obs. of  3 variables:
+  ..$ node_i: chr [1:65] "item_001" "item_005" "item_006" "item_003" ...
+  ..$ node_j: chr [1:65] "item_002" "item_007" "item_007" "item_004" ...
+  ..$ wto   : num [1:65] 0.529 0.455 0.398 0.384 0.306 ...
+ $ descriptives: Named num [1:10] 0.09 0.129 0 0.529 0.017 0.016 0.047 0.094 0.421 0.505
+  ..- attr(*, "names")= chr [1:10] "mean" "sd" "minimum" "maximum" ...
+ $ cut_off     : num 0.25
+
+--- UVA$keep_remove ---
+class: list
+names: [1] "keep"   "remove"
+str:
+List of 2
+ $ keep  : chr [1:6] "item_001" "item_004" "item_006" "item_007" ...
+ $ remove: chr [1:9] "item_002" "item_003" "item_005" "item_005" ...
+
+--- UVA reduced data / wTO field search ---
+reduced_data dim:  30 x 5 
+reduced_data colnames:  item_001 item_004 item_007 item_008 item_011 
+items removed (original columns not in reduced_data):  item_002 item_003 item_005 item_006 item_009 item_010 item_012 
+wto$pairwise (node_i, node_j, wto), top rows:
+      node_i   node_j       wto
+2   item_001 item_002 0.5289802
+55  item_005 item_007 0.4553064
+67  item_006 item_007 0.3975337
+28  item_003 item_004 0.3838260
+132 item_011 item_012 0.3059638
+108 item_009 item_012 0.2690419
+107 item_009 item_011 0.2619725
+54  item_005 item_006 0.2609289
+119 item_010 item_011 0.2573177
+106 item_009 item_010 0.2436061
+keep_remove (if present):
+$keep
+[1] "item_001" "item_004" "item_006" "item_007" "item_009" "item_011"
+
+$remove
+[1] "item_002" "item_003" "item_005" "item_005" "item_006" "item_009" "item_010" "item_012"
+[9] "item_012"
+
+
+keep_remove consistent with reduced_data? (keep == colnames(reduced_data)):  FALSE 
+Per-removed-item max pairwise wTO (candidate removed_wto_scores):
+ item_002  item_003  item_005  item_006  item_009  item_010  item_012 
+0.5289802 0.3838260 0.4553064 0.3975337 0.2690419 0.2573177 0.3059638 
+pairwise rows:  65  of  66  possible pairs
+
+second UVA pass names:  reduced_data, redundant, network, wto, keep_remove 
+second pass retained:  item_004 item_007 item_011 
+
+==========================================================================================
+4. EGAnet::EGA on the transposed matrix
+==========================================================================================
+
+--- EGA result ---
+class: EGA
+names: [1] "network"       "wc"            "n.dim"         "correlation"   "n"             "dim.variables"
+[7] "TEFI"         
+str:
+List of 7
+ $ network      : num [1:12, 1:12] 0 0.668 0.173 0.159 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..- attr(*, "methods")=List of 9
+  .. ..$ corr            : chr "auto"
+  .. ..$ model.selection : chr "ebic"
+  .. ..$ lambda          : num 0.105
+  .. ..$ gamma           : num 0.5
+  .. ..$ lambda.min.ratio: num 0.1
+  .. ..$ nlambda         : num 100
+  .. ..$ criterion       : num 256
+  .. ..$ model           : chr "glasso"
+  .. ..$ na.data         : chr "pairwise"
+ $ wc           : 'EGA.community' Named num [1:12] 1 1 1 1 2 2 2 3 3 3 ...
+  ..- attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..- attr(*, "methods")=List of 2
+  .. ..$ algorithm         : chr "Walktrap"
+  .. ..$ objective_function: NULL
+ $ n.dim        : int 3
+ $ correlation  : num [1:12, 1:12] 1 0.998 0.885 0.868 0.15 ...
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+ $ n            : int 30
+ $ dim.variables:'data.frame':	12 obs. of  2 variables:
+  ..$ items    : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..$ dimension: chr [1:12] "1" "1" "1" "1" ...
+ $ TEFI         : num -10.7
+ - attr(*, "class")= chr "EGA"
+ - attr(*, "unidimensional")=List of 3
+  ..$ uni.method    : chr "louvain"
+  ..$ unidimensional: logi FALSE
+  ..$ consensus     :List of 2
+  .. ..$ algorithm         : chr "Louvain"
+  .. ..$ objective_function: NULL
+
+--- ega$wc (community membership) ---
+class: EGA.community
+names:  [1] "item_001" "item_002" "item_003" "item_004" "item_005" "item_006" "item_007" "item_008"
+ [9] "item_009" "item_010" "item_011" "item_012"
+str:
+ 'EGA.community' Named num [1:12] 1 1 1 1 2 2 2 3 3 3 ...
+ - attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+ - attr(*, "methods")=List of 2
+
+names(ega$wc):  [1] "item_001" "item_002" "item_003" "item_004" "item_005" "item_006" "item_007" "item_008"
+ [9] "item_009" "item_010" "item_011" "item_012"
+ega$wc values:
+Algorithm:  Walktrap
+
+Number of communities:  3
+
+item_001 item_002 item_003 item_004 item_005 item_006 item_007 item_008 item_009 item_010 item_011 
+       1        1        1        1        2        2        2        3        3        3        3 
+item_012 
+       3 
+anyNA(ega$wc):  FALSE 
+ega$n.dim:  3 
+igraph::compare(wc, intended + 1, method = 'nmi'):  0.8180536 
+igraph::compare(<EGA.community> as is, intended + 1 (double)):  0.8180536 
+typeof(ega$wc):  double 
+
+==========================================================================================
+5. EGAnet::bootEGA
+==========================================================================================
+
+--- bootEGA result ---
+class: bootEGA
+names:  [1] "summary.table" "frequency"     "stability"     "bootGraphs"    "bootCorrs"     "boot.wc"      
+ [7] "boot.ndim"     "TEFI"          "EGA"           "EGA.type"      "type"          "iter"         
+str:
+List of 12
+ $ summary.table:'data.frame':	1 obs. of  8 variables:
+  ..$ n.Boots       : num 20
+  ..$ median.dim    : num 3
+  ..$ SE.dim        : num 0
+  ..$ CI.dim        : num 0
+  ..$ Lower.CI      : num 3
+  ..$ Upper.CI      : num 3
+  ..$ Lower.Quantile: num 3
+  ..$ Upper.Quantile: num 3
+ $ frequency    :'data.frame':	1 obs. of  2 variables:
+  ..$ # of Factors: num 3
+  ..$ Frequency   : num 1
+ $ stability    :List of 2
+  ..$ dimension.stability:List of 2
+  ..$ item.stability     :List of 3
+  .. ..- attr(*, "class")= chr "itemStability"
+  .. ..- attr(*, "methods")=List of 3
+  .. ..- attr(*, "color")= chr [1:3] "#F03D2D" "#90DDF0" "#C8D96F"
+  ..- attr(*, "class")= chr "dimensionStability"
+ $ bootGraphs   :List of 20
+  ..$ : num [1:12, 1:12] 0 0.627 0.211 0.121 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.693 0.134 0.188 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.624 0.209 0.131 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.594 0.24 0.119 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.736 0.0764 0.1901 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.691 0.13 0.12 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.68876 0.17927 0.14464 0.00287 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.6178 0.1539 0.1876 0.0445 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.558 0.2 0.246 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.694 0.146 0.126 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.609 0.141 0.217 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.647 0.15 0.146 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.7641 0.0661 0.1294 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.817 0.07 0.106 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.584 0.236 0.193 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.632 0.228 0.156 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.65 0.189 0.136 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.626 0.139 0.164 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.679 0.0843 0.2163 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ : num [1:12, 1:12] 0 0.651 0.159 0.196 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+ $ bootCorrs    :List of 20
+  ..$ : num [1:12, 1:12] 1 0.999 0.924 0.889 0.162 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.9977 0.8607 0.8578 0.0563 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.99925 0.93353 0.90202 -0.00524 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.999 0.943 0.89 0.212 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.998 0.786 0.855 0.106 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.997 0.807 0.785 0.245 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.997 0.863 0.847 0.43 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.998 0.875 0.896 0.38 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.999 0.938 0.939 0.214 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.9987 0.8775 0.862 0.0627 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.998 0.889 0.921 0.137 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.9989 0.8852 0.8767 0.0825 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.998 0.729 0.804 -0.106 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.9922 0.616 0.6321 0.0289 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.999 0.938 0.913 0.172 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.999 0.929 0.868 0.28 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.998 0.884 0.858 0.183 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.998 0.867 0.882 0.224 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.9981 0.8133 0.886 0.0417 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ : num [1:12, 1:12] 1 0.9992 0.8675 0.893 0.0467 ...
+  .. ..- attr(*, "dimnames")=List of 2
+ $ boot.wc      : num [1:20, 1:12] 1 1 1 1 1 1 1 1 1 1 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ boot.ndim    : num [1:20] 3 3 3 3 3 3 3 3 3 3 ...
+ $ TEFI         : num [1:20] -9.87 -10.47 -10.29 -10.08 -9.76 ...
+ $ EGA          :List of 7
+  ..$ network      : num [1:12, 1:12] 0 0.668 0.173 0.159 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  .. ..- attr(*, "methods")=List of 9
+  ..$ wc           : 'EGA.community' Named num [1:12] 1 1 1 1 2 2 2 3 3 3 ...
+  .. ..- attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. ..- attr(*, "methods")=List of 2
+  ..$ n.dim        : int 3
+  ..$ correlation  : num [1:12, 1:12] 1 0.998 0.885 0.868 0.15 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ n            : int 30
+  ..$ dim.variables:'data.frame':	12 obs. of  2 variables:
+  ..$ TEFI         : num -10.7
+  ..- attr(*, "class")= chr "EGA"
+  ..- attr(*, "unidimensional")=List of 3
+ $ EGA.type     : chr "ega"
+ $ type         : chr "resampling"
+ $ iter         : int 20
+ - attr(*, "class")= chr "bootEGA"
+
+--- bootEGA$summary.table ---
+class: data.frame
+names: [1] "n.Boots"        "median.dim"     "SE.dim"         "CI.dim"         "Lower.CI"      
+[6] "Upper.CI"       "Lower.Quantile" "Upper.Quantile"
+str:
+'data.frame':	1 obs. of  8 variables:
+ $ n.Boots       : num 20
+ $ median.dim    : num 3
+ $ SE.dim        : num 0
+ $ CI.dim        : num 0
+ $ Lower.CI      : num 3
+ $ Upper.CI      : num 3
+ $ Lower.Quantile: num 3
+ $ Upper.Quantile: num 3
+
+--- bootEGA$frequency ---
+class: data.frame
+names: [1] "# of Factors" "Frequency"   
+str:
+'data.frame':	1 obs. of  2 variables:
+ $ # of Factors: num 3
+ $ Frequency   : num 1
+
+--- bootEGA$stability ---
+class: dimensionStability
+names: [1] "dimension.stability" "item.stability"     
+str:
+List of 2
+ $ dimension.stability:List of 2
+  ..$ structural.consistency: Named num [1:3] 1 0.95 0.85
+  .. ..- attr(*, "names")= chr [1:3] "1" "2" "3"
+  ..$ average.item.stability: Named num [1:3] 1 0.983 0.97
+  .. ..- attr(*, "names")= chr [1:3] "1" "2" "3"
+ $ item.stability     :List of 3
+  ..$ membership    :List of 3
+  ..$ item.stability:List of 2
+  ..$ plot          : <ggplot2::ggplot>
+  .. ..@ data       :'data.frame':	12 obs. of  3 variables:
+  .. ..@ layers     :List of 3
+  .. ..@ scales     :Classes 'ScalesList', 'ggproto', 'gg' <ggproto object: Class ScalesList, gg>
+    add: function
+    add_defaults: function
+    add_missing: function
+    backtransform_df: function
+    clone: function
+    find: function
+    get_scales: function
+    has_scale: function
+    input: function
+    map_df: function
+    n: function
+    non_position_scales: function
+    scales: list
+    set_palettes: function
+    train_df: function
+    transform_df: function
+    super:  <ggproto object: Class ScalesList, gg> 
+  .. ..@ guides     :Classes 'Guides', 'ggproto', 'gg' <ggproto object: Class Guides, gg>
+    add: function
+    assemble: function
+    build: function
+    draw: function
+    get_custom: function
+    get_guide: function
+    get_params: function
+    get_position: function
+    guides: NULL
+    merge: function
+    missing: <ggproto object: Class GuideNone, Guide, gg>
+        add_title: function
+        arrange_layout: function
+        assemble_drawing: function
+        available_aes: any
+        build_decor: function
+        build_labels: function
+        build_ticks: function
+        build_title: function
+        draw: function
+        draw_early_exit: function
+        elements: list
+        extract_decor: function
+        extract_key: function
+        extract_params: function
+        get_layer_key: function
+        hashables: list
+        measure_grobs: function
+        merge: function
+        override_elements: function
+        params: list
+        process_layers: function
+        setup_elements: function
+        setup_params: function
+        train: function
+        transform: function
+        super:  <ggproto object: Class GuideNone, Guide, gg>
+    package_box: function
+    print: function
+    process_layers: function
+    setup: function
+    subset_guides: function
+    train: function
+    update_params: function
+    super:  <ggproto object: Class Guides, gg> 
+  .. ..@ mapping    : <ggplot2::mapping> List of 2
+ .. .. .. $ x: language ~Node
+ .. .. ..  ..- attr(*, ".Environment")=<environment: 0x00000237d1090e78> 
+ .. .. .. $ y: language ~Replication
+ .. .. ..  ..- attr(*, ".Environment")=<environment: 0x00000237d1090e78> 
+  .. ..@ theme      : <theme> List of 144
+ .. .. .. $ line                            : <ggplot2::element_line>
+ .. .. ..  ..@ colour       : chr "black"
+ .. .. ..  ..@ linewidth    : num 0.545
+ .. .. ..  ..@ linetype     : num 1
+ .. .. ..  ..@ lineend      : chr "butt"
+ .. .. ..  ..@ linejoin     : chr "round"
+ .. .. ..  ..@ arrow        : logi FALSE
+ .. .. ..  ..@ arrow.fill   : chr "black"
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ rect                            : <ggplot2::element_rect>
+ .. .. ..  ..@ fill         : chr "white"
+ .. .. ..  ..@ colour       : chr "black"
+ .. .. ..  ..@ linewidth    : num 0.545
+ .. .. ..  ..@ linetype     : num 1
+ .. .. ..  ..@ linejoin     : chr "round"
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ text                            : <ggplot2::element_text>
+ .. .. ..  ..@ family       : chr ""
+ .. .. ..  ..@ face         : chr "plain"
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : chr "black"
+ .. .. ..  ..@ size         : num 12
+ .. .. ..  ..@ hjust        : num 0.5
+ .. .. ..  ..@ vjust        : num 0.5
+ .. .. ..  ..@ angle        : num 0
+ .. .. ..  ..@ lineheight   : num 0.9
+ .. .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 0 0
+ .. .. ..  ..@ debug        : logi FALSE
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ title                           : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : NULL
+ .. .. ..  ..@ vjust        : NULL
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : NULL
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ point                           : <ggplot2::element_point>
+ .. .. ..  ..@ colour       : chr "black"
+ .. .. ..  ..@ shape        : num 19
+ .. .. ..  ..@ size         : num 1.64
+ .. .. ..  ..@ fill         : chr "white"
+ .. .. ..  ..@ stroke       : num 0.545
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ polygon                         : <ggplot2::element_polygon>
+ .. .. ..  ..@ fill         : chr "white"
+ .. .. ..  ..@ colour       : chr "black"
+ .. .. ..  ..@ linewidth    : num 0.545
+ .. .. ..  ..@ linetype     : num 1
+ .. .. ..  ..@ linejoin     : chr "round"
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ geom                            : <ggplot2::element_geom>
+ .. .. ..  ..@ ink        : chr "black"
+ .. .. ..  ..@ paper      : chr "white"
+ .. .. ..  ..@ accent     : chr "#3366FF"
+ .. .. ..  ..@ linewidth  : num 0.545
+ .. .. ..  ..@ borderwidth: num 0.545
+ .. .. ..  ..@ linetype   : int 1
+ .. .. ..  ..@ bordertype : int 1
+ .. .. ..  ..@ family     : chr ""
+ .. .. ..  ..@ fontsize   : num 4.22
+ .. .. ..  ..@ pointsize  : num 1.64
+ .. .. ..  ..@ pointshape : num 19
+ .. .. ..  ..@ colour     : NULL
+ .. .. ..  ..@ fill       : NULL
+ .. .. .. $ spacing                         : 'simpleUnit' num 6points
+ .. .. ..  ..- attr(*, "unit")= int 8
+ .. .. .. $ margins                         : <ggplot2::margin> num [1:4] 6 6 6 6
+ .. .. .. $ aspect.ratio                    : NULL
+ .. .. .. $ axis.title                      : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : chr "bold"
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : NULL
+ .. .. ..  ..@ vjust        : NULL
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : NULL
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi FALSE
+ .. .. .. $ axis.title.x                    : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : NULL
+ .. .. ..  ..@ vjust        : num 1
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 3 0 0 0
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ axis.title.x.top                : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : NULL
+ .. .. ..  ..@ vjust        : num 0
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 3 0
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ axis.title.x.bottom             : NULL
+ .. .. .. $ axis.title.y                    : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : NULL
+ .. .. ..  ..@ vjust        : num 1
+ .. .. ..  ..@ angle        : num 90
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 3 0 0
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ axis.title.y.left               : NULL
+ .. .. .. $ axis.title.y.right              : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : NULL
+ .. .. ..  ..@ vjust        : num 1
+ .. .. ..  ..@ angle        : num -90
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 0 3
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ axis.text                       : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : chr "black"
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : NULL
+ .. .. ..  ..@ vjust        : NULL
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : NULL
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ axis.text.x                     : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : NULL
+ .. .. ..  ..@ vjust        : num 1
+ .. .. ..  ..@ angle        : num 0
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 2.4 0 0 0
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi FALSE
+ .. .. .. $ axis.text.x.top                 : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : NULL
+ .. .. ..  ..@ vjust        : num 0
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 2.4 0
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ axis.text.x.bottom              : NULL
+ .. .. .. $ axis.text.y                     : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : num 11.8
+ .. .. ..  ..@ hjust        : num 1
+ .. .. ..  ..@ vjust        : NULL
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 2.4 0 0
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi FALSE
+ .. .. .. $ axis.text.y.left                : NULL
+ .. .. .. $ axis.text.y.right               : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : num 0
+ .. .. ..  ..@ vjust        : NULL
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 0 2.4
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ axis.text.theta                 : NULL
+ .. .. .. $ axis.text.r                     : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : num 0.5
+ .. .. ..  ..@ vjust        : NULL
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 2.4 0 2.4
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ axis.ticks                      : <ggplot2::element_line>
+ .. .. ..  ..@ colour       : chr "black"
+ .. .. ..  ..@ linewidth    : NULL
+ .. .. ..  ..@ linetype     : NULL
+ .. .. ..  ..@ lineend      : NULL
+ .. .. ..  ..@ linejoin     : NULL
+ .. .. ..  ..@ arrow        : logi FALSE
+ .. .. ..  ..@ arrow.fill   : chr "black"
+ .. .. ..  ..@ inherit.blank: logi FALSE
+ .. .. .. $ axis.ticks.x                    : NULL
+ .. .. .. $ axis.ticks.x.top                : NULL
+ .. .. .. $ axis.ticks.x.bottom             : NULL
+ .. .. .. $ axis.ticks.y                    : NULL
+ .. .. .. $ axis.ticks.y.left               : NULL
+ .. .. .. $ axis.ticks.y.right              : NULL
+ .. .. .. $ axis.ticks.theta                : NULL
+ .. .. .. $ axis.ticks.r                    : NULL
+ .. .. .. $ axis.minor.ticks.x.top          : NULL
+ .. .. .. $ axis.minor.ticks.x.bottom       : NULL
+ .. .. .. $ axis.minor.ticks.y.left         : NULL
+ .. .. .. $ axis.minor.ticks.y.right        : NULL
+ .. .. .. $ axis.minor.ticks.theta          : NULL
+ .. .. .. $ axis.minor.ticks.r              : NULL
+ .. .. .. $ axis.ticks.length               : 'rel' num 0.5
+ .. .. .. $ axis.ticks.length.x             : NULL
+ .. .. .. $ axis.ticks.length.x.top         : NULL
+ .. .. .. $ axis.ticks.length.x.bottom      : NULL
+ .. .. .. $ axis.ticks.length.y             : NULL
+ .. .. .. $ axis.ticks.length.y.left        : NULL
+ .. .. .. $ axis.ticks.length.y.right       : NULL
+ .. .. .. $ axis.ticks.length.theta         : NULL
+ .. .. .. $ axis.ticks.length.r             : NULL
+ .. .. .. $ axis.minor.ticks.length         : 'rel' num 0.75
+ .. .. .. $ axis.minor.ticks.length.x       : NULL
+ .. .. .. $ axis.minor.ticks.length.x.top   : NULL
+ .. .. .. $ axis.minor.ticks.length.x.bottom: NULL
+ .. .. .. $ axis.minor.ticks.length.y       : NULL
+ .. .. .. $ axis.minor.ticks.length.y.left  : NULL
+ .. .. .. $ axis.minor.ticks.length.y.right : NULL
+ .. .. .. $ axis.minor.ticks.length.theta   : NULL
+ .. .. .. $ axis.minor.ticks.length.r       : NULL
+ .. .. .. $ axis.line                       : <ggplot2::element_line>
+ .. .. ..  ..@ colour       : chr "black"
+ .. .. ..  ..@ linewidth    : num 0.5
+ .. .. ..  ..@ linetype     : NULL
+ .. .. ..  ..@ lineend      : NULL
+ .. .. ..  ..@ linejoin     : NULL
+ .. .. ..  ..@ arrow        : logi FALSE
+ .. .. ..  ..@ arrow.fill   : chr "black"
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ axis.line.x                     : NULL
+ .. .. .. $ axis.line.x.top                 : NULL
+ .. .. .. $ axis.line.x.bottom              : NULL
+ .. .. .. $ axis.line.y                     : NULL
+ .. .. .. $ axis.line.y.left                : NULL
+ .. .. .. $ axis.line.y.right               : NULL
+ .. .. .. $ axis.line.theta                 : NULL
+ .. .. .. $ axis.line.r                     : NULL
+ .. .. .. $ legend.background               : <ggplot2::element_rect>
+ .. .. ..  ..@ fill         : NULL
+ .. .. ..  ..@ colour       : logi NA
+ .. .. ..  ..@ linewidth    : NULL
+ .. .. ..  ..@ linetype     : NULL
+ .. .. ..  ..@ linejoin     : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ legend.margin                   : NULL
+ .. .. .. $ legend.spacing                  : 'rel' num 2
+ .. .. .. $ legend.spacing.x                : NULL
+ .. .. .. $ legend.spacing.y                : NULL
+ .. .. .. $ legend.key                      : <ggplot2::element_blank>
+ .. .. .. $ legend.key.size                 : 'simpleUnit' num 1.2lines
+ .. .. ..  ..- attr(*, "unit")= int 3
+ .. .. .. $ legend.key.height               : NULL
+ .. .. .. $ legend.key.width                : NULL
+ .. .. .. $ legend.key.spacing              : NULL
+ .. .. .. $ legend.key.spacing.x            : NULL
+ .. .. .. $ legend.key.spacing.y            : NULL
+ .. .. .. $ legend.key.justification        : NULL
+ .. .. .. $ legend.frame                    : NULL
+ .. .. .. $ legend.ticks                    : NULL
+ .. .. .. $ legend.ticks.length             : 'rel' num 0.2
+ .. .. .. $ legend.axis.line                : NULL
+ .. .. .. $ legend.text                     : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : NULL
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : 'rel' num 0.8
+ .. .. ..  ..@ hjust        : NULL
+ .. .. ..  ..@ vjust        : NULL
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : NULL
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi TRUE
+ .. .. .. $ legend.text.position            : NULL
+ .. .. .. $ legend.title                    : <ggplot2::element_text>
+ .. .. ..  ..@ family       : NULL
+ .. .. ..  ..@ face         : chr "bold"
+ .. .. ..  ..@ italic       : chr NA
+ .. .. ..  ..@ fontweight   : num NA
+ .. .. ..  ..@ fontwidth    : num NA
+ .. .. ..  ..@ colour       : NULL
+ .. .. ..  ..@ size         : NULL
+ .. .. ..  ..@ hjust        : num 1
+ .. .. ..  ..@ vjust        : NULL
+ .. .. ..  ..@ angle        : NULL
+ .. .. ..  ..@ lineheight   : NULL
+ .. .. ..  ..@ margin       : NULL
+ .. .. ..  ..@ debug        : NULL
+ .. .. ..  ..@ inherit.blank: logi FALSE
+ .. .. .. $ legend.title.position           : NULL
+ .. .. .. $ legend.position                 : chr "top"
+ .. .. .. $ legend.position.inside          : NULL
+ .. .. .. $ legend.direction                : NULL
+ .. .. .. $ legend.byrow                    : NULL
+ .. .. .. $ legend.justification            : chr "center"
+ .. .. .. $ legend.justification.top        : NULL
+ .. .. .. $ legend.justification.bottom     : NULL
+ .. .. .. $ legend.justification.left       : NULL
+ .. .. .. $ legend.justification.right      : NULL
+ .. .. .. $ legend.justification.inside     : NULL
+ .. .. ..  [list output truncated]
+ .. .. .. @ complete: logi TRUE
+ .. .. .. @ validate: logi TRUE
+  .. ..@ coordinates:Classes 'CoordFlip', 'CoordCartesian', 'Coord', 'ggproto', 'gg' <ggproto object: Class CoordFlip, CoordCartesian, Coord, gg>
+    aspect: function
+    backtransform_range: function
+    clip: on
+    default: FALSE
+    distance: function
+    draw_panel: function
+    expand: TRUE
+    is_free: function
+    is_linear: function
+    labels: function
+    limits: list
+    modify_scales: function
+    range: function
+    render_axis_h: function
+    render_axis_v: function
+    render_bg: function
+    render_fg: function
+    reverse: none
+    setup_data: function
+    setup_layout: function
+    setup_panel_guides: function
+    setup_panel_params: function
+    setup_params: function
+    train_panel_guides: function
+    transform: function
+    super:  <ggproto object: Class CoordFlip, CoordCartesian, Coord, gg> 
+  .. ..@ facet      :Classes 'FacetNull', 'Facet', 'ggproto', 'gg' <ggproto object: Class FacetNull, Facet, gg>
+    attach_axes: function
+    attach_strips: function
+    compute_layout: function
+    draw_back: function
+    draw_front: function
+    draw_labels: function
+    draw_panel_content: function
+    draw_panels: function
+    finish_data: function
+    format_strip_labels: function
+    init_gtable: function
+    init_scales: function
+    map_data: function
+    params: list
+    set_panel_size: function
+    setup_data: function
+    setup_panel_params: function
+    setup_params: function
+    shrink: TRUE
+    train_scales: function
+    vars: function
+    super:  <ggproto object: Class FacetNull, Facet, gg> 
+  .. ..@ layout     :Classes 'Layout', 'ggproto', 'gg' <ggproto object: Class Layout, gg>
+    coord: NULL
+    coord_params: list
+    facet: NULL
+    facet_params: list
+    finish_data: function
+    get_scales: function
+    layout: NULL
+    map_position: function
+    panel_params: NULL
+    panel_scales_x: NULL
+    panel_scales_y: NULL
+    render: function
+    render_labels: function
+    reset_scales: function
+    resolve_label: function
+    setup: function
+    setup_panel_guides: function
+    setup_panel_params: function
+    train_position: function
+    super:  <ggproto object: Class Layout, gg> 
+  .. ..@ labels     : <ggplot2::labels> List of 4
+ .. .. .. $ colour  : chr "Communities"
+ .. .. .. $ fill    : chr "Communities"
+ .. .. .. $ linetype: chr "Communities"
+ .. .. .. $ shape   : chr "Communities"
+  .. ..@ meta       : list()
+  .. ..@ plot_env   :<environment: 0x00000237d064f2e0> 
+  ..- attr(*, "class")= chr "itemStability"
+  ..- attr(*, "methods")=List of 3
+  ..- attr(*, "color")= chr [1:3] "#F03D2D" "#90DDF0" "#C8D96F"
+ - attr(*, "class")= chr "dimensionStability"
+
+--- bootEGA$bootGraphs ---
+class: list
+names: NULL
+str:
+List of 20
+ $ : num [1:12, 1:12] 0 0.627 0.211 0.121 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.693 0.134 0.188 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.624 0.209 0.131 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.594 0.24 0.119 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.736 0.0764 0.1901 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.691 0.13 0.12 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.68876 0.17927 0.14464 0.00287 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.6178 0.1539 0.1876 0.0445 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.558 0.2 0.246 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.694 0.146 0.126 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.609 0.141 0.217 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.647 0.15 0.146 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.7641 0.0661 0.1294 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.817 0.07 0.106 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.584 0.236 0.193 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.632 0.228 0.156 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.65 0.189 0.136 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.626 0.139 0.164 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.679 0.0843 0.2163 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ : num [1:12, 1:12] 0 0.651 0.159 0.196 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+
+--- bootEGA$bootCorrs ---
+class: list
+names: NULL
+str:
+List of 20
+ $ : num [1:12, 1:12] 1 0.999 0.924 0.889 0.162 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.9977 0.8607 0.8578 0.0563 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.99925 0.93353 0.90202 -0.00524 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.999 0.943 0.89 0.212 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.998 0.786 0.855 0.106 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.997 0.807 0.785 0.245 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.997 0.863 0.847 0.43 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.998 0.875 0.896 0.38 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.999 0.938 0.939 0.214 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.9987 0.8775 0.862 0.0627 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.998 0.889 0.921 0.137 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.9989 0.8852 0.8767 0.0825 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.998 0.729 0.804 -0.106 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.9922 0.616 0.6321 0.0289 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.999 0.938 0.913 0.172 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.999 0.929 0.868 0.28 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.998 0.884 0.858 0.183 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.998 0.867 0.882 0.224 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.9981 0.8133 0.886 0.0417 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ : num [1:12, 1:12] 1 0.9992 0.8675 0.893 0.0467 ...
+  ..- attr(*, "dimnames")=List of 2
+
+--- bootEGA$boot.wc ---
+class: matrix, array
+names: NULL
+str:
+ num [1:20, 1:12] 1 1 1 1 1 1 1 1 1 1 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : NULL
+  ..$ : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+
+--- bootEGA$boot.ndim ---
+class: numeric
+names: NULL
+str:
+ num [1:20] 3 3 3 3 3 3 3 3 3 3 ...
+
+--- bootEGA$TEFI ---
+class: numeric
+names: NULL
+str:
+ num [1:20] -9.87 -10.47 -10.29 -10.08 -9.76 ...
+
+--- bootEGA$EGA ---
+class: EGA
+names: [1] "network"       "wc"            "n.dim"         "correlation"   "n"             "dim.variables"
+[7] "TEFI"         
+str:
+List of 7
+ $ network      : num [1:12, 1:12] 0 0.668 0.173 0.159 0 ...
+  ..- attr(*, "dimnames")=List of 2
+  ..- attr(*, "methods")=List of 9
+ $ wc           : 'EGA.community' Named num [1:12] 1 1 1 1 2 2 2 3 3 3 ...
+  ..- attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..- attr(*, "methods")=List of 2
+ $ n.dim        : int 3
+ $ correlation  : num [1:12, 1:12] 1 0.998 0.885 0.868 0.15 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ n            : int 30
+ $ dim.variables:'data.frame':	12 obs. of  2 variables:
+  ..$ items    : chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..$ dimension: chr [1:12] "1" "1" "1" "1" ...
+ $ TEFI         : num -10.7
+ - attr(*, "class")= chr "EGA"
+ - attr(*, "unidimensional")=List of 3
+  ..$ uni.method    : chr "louvain"
+  ..$ unidimensional: logi FALSE
+  ..$ consensus     :List of 2
+
+--- bootEGA$EGA.type ---
+class: character
+names: NULL
+str:
+ chr "ega"
+
+--- bootEGA$type ---
+class: character
+names: NULL
+str:
+ chr "resampling"
+
+--- bootEGA$iter ---
+class: integer
+names: NULL
+str:
+ int 20
+
+==========================================================================================
+5b. bootEGA seed type check (jsonlite parses whole numbers as integer)
+==========================================================================================
+seed = 1L (integer): ERROR: REAL() can only be applied to a 'numeric', not a 'integer' 
+iter = 5L (integer), seed = as.numeric(1L): OK 
+
+==========================================================================================
+6. EGAnet::itemStability on the bootEGA result
+==========================================================================================
+
+--- itemStability result ---
+class: itemStability
+names: [1] "membership"     "item.stability" "plot"          
+str:
+List of 3
+ $ membership    :List of 3
+  ..$ empirical: 'EGA.community' Named num [1:12] 1 1 1 1 2 2 2 3 3 3 ...
+  .. ..- attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. ..- attr(*, "methods")=List of 2
+  ..$ bootstrap: num [1:20, 1:12] 1 1 1 1 1 1 1 1 1 1 ...
+  .. ..- attr(*, "dimnames")=List of 2
+  ..$ structure: 'EGA.community' Named num [1:12] 1 1 1 1 2 2 2 3 3 3 ...
+  .. ..- attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  .. ..- attr(*, "methods")=List of 2
+ $ item.stability:List of 2
+  ..$ empirical.dimensions: Named num [1:12] 1 1 1 1 1 0.95 1 0.85 1 1 ...
+  .. ..- attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..$ all.dimensions      : num [1:12, 1:3] 1 1 1 1 0 0 0 0 0 0 ...
+  .. ..- attr(*, "dimnames")=List of 2
+ $ plot          : <ggplot2::ggplot>
+  ..@ data       :'data.frame':	12 obs. of  3 variables:
+ .. .. $ Node       : Factor w/ 12 levels "item_001","item_002",..: 1 2 3 4 5 6 7 8 9 10 ...
+ .. .. $ Replication: num [1:12] 1 1 1 1 1 1 0.95 1 1 1 ...
+ .. .. $ Community  : Factor w/ 3 levels "1","2","3": 1 1 1 1 2 2 2 3 3 3 ...
+  ..@ layers     :List of 3
+ .. .. $ geom_linerange:Classes 'LayerInstance', 'Layer', 'ggproto', 'gg' <ggproto object: Class LayerInstance, Layer, gg>
+    aes_params: list
+    compute_aesthetics: function
+    compute_geom_1: function
+    compute_geom_2: function
+    compute_position: function
+    compute_statistic: function
+    computed_geom_params: NULL
+    computed_mapping: NULL
+    computed_stat_params: NULL
+    constructor: call
+    data: data.frame
+    draw_geom: function
+    finish_statistics: function
+    geom: <ggproto object: Class GeomLinerange, Geom, gg>
+        aesthetics: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        draw_group: function
+        draw_key: function
+        draw_layer: function
+        draw_panel: function
+        extra_params: na.rm orientation
+        handle_na: function
+        non_missing_aes: 
+        optional_aes: 
+        parameters: function
+        rename_size: TRUE
+        required_aes: x|y ymin|xmin ymax|xmax
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Geom, gg>
+    geom_params: list
+    inherit.aes: TRUE
+    layer_data: function
+    layout: NULL
+    map_statistic: function
+    mapping: ggplot2::mapping, uneval, gg, S7_object
+    name: NULL
+    position: <ggproto object: Class PositionIdentity, Position, gg>
+        aesthetics: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        required_aes: 
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Position, gg>
+    print: function
+    setup_layer: function
+    show.legend: NA
+    stat: <ggproto object: Class StatIdentity, Stat, gg>
+        aesthetics: function
+        compute_group: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        dropped_aes: 
+        extra_params: na.rm
+        finish_layer: function
+        non_missing_aes: 
+        optional_aes: 
+        parameters: function
+        required_aes: 
+        retransform: TRUE
+        setup_data: function
+        setup_params: function
+        super:  <ggproto object: Class Stat, gg>
+    stat_params: list
+    super:  <ggproto object: Class Layer, gg> 
+ .. .. $ geom_point    :Classes 'LayerInstance', 'Layer', 'ggproto', 'gg' <ggproto object: Class LayerInstance, Layer, gg>
+    aes_params: list
+    compute_aesthetics: function
+    compute_geom_1: function
+    compute_geom_2: function
+    compute_position: function
+    compute_statistic: function
+    computed_geom_params: NULL
+    computed_mapping: NULL
+    computed_stat_params: NULL
+    constructor: call
+    data: data.frame
+    draw_geom: function
+    finish_statistics: function
+    geom: <ggproto object: Class GeomPoint, Geom, gg>
+        aesthetics: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        draw_group: function
+        draw_key: function
+        draw_layer: function
+        draw_panel: function
+        extra_params: na.rm
+        handle_na: function
+        non_missing_aes: size shape colour
+        optional_aes: 
+        parameters: function
+        rename_size: FALSE
+        required_aes: x y
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Geom, gg>
+    geom_params: list
+    inherit.aes: TRUE
+    layer_data: function
+    layout: NULL
+    map_statistic: function
+    mapping: ggplot2::mapping, uneval, gg, S7_object
+    name: NULL
+    position: <ggproto object: Class PositionIdentity, Position, gg>
+        aesthetics: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        required_aes: 
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Position, gg>
+    print: function
+    setup_layer: function
+    show.legend: NA
+    stat: <ggproto object: Class StatIdentity, Stat, gg>
+        aesthetics: function
+        compute_group: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        dropped_aes: 
+        extra_params: na.rm
+        finish_layer: function
+        non_missing_aes: 
+        optional_aes: 
+        parameters: function
+        required_aes: 
+        retransform: TRUE
+        setup_data: function
+        setup_params: function
+        super:  <ggproto object: Class Stat, gg>
+    stat_params: list
+    super:  <ggproto object: Class Layer, gg> 
+ .. .. $ geom_text     :Classes 'LayerInstance', 'Layer', 'ggproto', 'gg' <ggproto object: Class LayerInstance, Layer, gg>
+    aes_params: list
+    compute_aesthetics: function
+    compute_geom_1: function
+    compute_geom_2: function
+    compute_position: function
+    compute_statistic: function
+    computed_geom_params: NULL
+    computed_mapping: NULL
+    computed_stat_params: NULL
+    constructor: call
+    data: data.frame
+    draw_geom: function
+    finish_statistics: function
+    geom: <ggproto object: Class GeomText, Geom, gg>
+        aesthetics: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        draw_group: function
+        draw_key: function
+        draw_layer: function
+        draw_panel: function
+        extra_params: na.rm
+        handle_na: function
+        non_missing_aes: angle
+        optional_aes: 
+        parameters: function
+        rename_size: FALSE
+        required_aes: x y label
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Geom, gg>
+    geom_params: list
+    inherit.aes: TRUE
+    layer_data: function
+    layout: NULL
+    map_statistic: function
+    mapping: ggplot2::mapping, uneval, gg, S7_object
+    name: NULL
+    position: <ggproto object: Class PositionIdentity, Position, gg>
+        aesthetics: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        required_aes: 
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Position, gg>
+    print: function
+    setup_layer: function
+    show.legend: NA
+    stat: <ggproto object: Class StatIdentity, Stat, gg>
+        aesthetics: function
+        compute_group: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        dropped_aes: 
+        extra_params: na.rm
+        finish_layer: function
+        non_missing_aes: 
+        optional_aes: 
+        parameters: function
+        required_aes: 
+        retransform: TRUE
+        setup_data: function
+        setup_params: function
+        super:  <ggproto object: Class Stat, gg>
+    stat_params: list
+    super:  <ggproto object: Class Layer, gg> 
+  ..@ scales     :Classes 'ScalesList', 'ggproto', 'gg' <ggproto object: Class ScalesList, gg>
+    add: function
+    add_defaults: function
+    add_missing: function
+    backtransform_df: function
+    clone: function
+    find: function
+    get_scales: function
+    has_scale: function
+    input: function
+    map_df: function
+    n: function
+    non_position_scales: function
+    scales: list
+    set_palettes: function
+    train_df: function
+    transform_df: function
+    super:  <ggproto object: Class ScalesList, gg> 
+  ..@ guides     :Classes 'Guides', 'ggproto', 'gg' <ggproto object: Class Guides, gg>
+    add: function
+    assemble: function
+    build: function
+    draw: function
+    get_custom: function
+    get_guide: function
+    get_params: function
+    get_position: function
+    guides: NULL
+    merge: function
+    missing: <ggproto object: Class GuideNone, Guide, gg>
+        add_title: function
+        arrange_layout: function
+        assemble_drawing: function
+        available_aes: any
+        build_decor: function
+        build_labels: function
+        build_ticks: function
+        build_title: function
+        draw: function
+        draw_early_exit: function
+        elements: list
+        extract_decor: function
+        extract_key: function
+        extract_params: function
+        get_layer_key: function
+        hashables: list
+        measure_grobs: function
+        merge: function
+        override_elements: function
+        params: list
+        process_layers: function
+        setup_elements: function
+        setup_params: function
+        train: function
+        transform: function
+        super:  <ggproto object: Class GuideNone, Guide, gg>
+    package_box: function
+    print: function
+    process_layers: function
+    setup: function
+    subset_guides: function
+    train: function
+    update_params: function
+    super:  <ggproto object: Class Guides, gg> 
+  ..@ mapping    : <ggplot2::mapping> List of 2
+ .. .. $ x: language ~Node
+ .. ..  ..- attr(*, ".Environment")=<environment: 0x00000237c7797540> 
+ .. .. $ y: language ~Replication
+ .. ..  ..- attr(*, ".Environment")=<environment: 0x00000237c7797540> 
+  ..@ theme      : <theme> List of 144
+ .. .. $ line                            : <ggplot2::element_line>
+ .. ..  ..@ colour       : chr "black"
+ .. ..  ..@ linewidth    : num 0.545
+ .. ..  ..@ linetype     : num 1
+ .. ..  ..@ lineend      : chr "butt"
+ .. ..  ..@ linejoin     : chr "round"
+ .. ..  ..@ arrow        : logi FALSE
+ .. ..  ..@ arrow.fill   : chr "black"
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ rect                            : <ggplot2::element_rect>
+ .. ..  ..@ fill         : chr "white"
+ .. ..  ..@ colour       : chr "black"
+ .. ..  ..@ linewidth    : num 0.545
+ .. ..  ..@ linetype     : num 1
+ .. ..  ..@ linejoin     : chr "round"
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ text                            : <ggplot2::element_text>
+ .. ..  ..@ family       : chr ""
+ .. ..  ..@ face         : chr "plain"
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : chr "black"
+ .. ..  ..@ size         : num 12
+ .. ..  ..@ hjust        : num 0.5
+ .. ..  ..@ vjust        : num 0.5
+ .. ..  ..@ angle        : num 0
+ .. ..  ..@ lineheight   : num 0.9
+ .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 0 0
+ .. ..  ..@ debug        : logi FALSE
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ title                           : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : NULL
+ .. ..  ..@ vjust        : NULL
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : NULL
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ point                           : <ggplot2::element_point>
+ .. ..  ..@ colour       : chr "black"
+ .. ..  ..@ shape        : num 19
+ .. ..  ..@ size         : num 1.64
+ .. ..  ..@ fill         : chr "white"
+ .. ..  ..@ stroke       : num 0.545
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ polygon                         : <ggplot2::element_polygon>
+ .. ..  ..@ fill         : chr "white"
+ .. ..  ..@ colour       : chr "black"
+ .. ..  ..@ linewidth    : num 0.545
+ .. ..  ..@ linetype     : num 1
+ .. ..  ..@ linejoin     : chr "round"
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ geom                            : <ggplot2::element_geom>
+ .. ..  ..@ ink        : chr "black"
+ .. ..  ..@ paper      : chr "white"
+ .. ..  ..@ accent     : chr "#3366FF"
+ .. ..  ..@ linewidth  : num 0.545
+ .. ..  ..@ borderwidth: num 0.545
+ .. ..  ..@ linetype   : int 1
+ .. ..  ..@ bordertype : int 1
+ .. ..  ..@ family     : chr ""
+ .. ..  ..@ fontsize   : num 4.22
+ .. ..  ..@ pointsize  : num 1.64
+ .. ..  ..@ pointshape : num 19
+ .. ..  ..@ colour     : NULL
+ .. ..  ..@ fill       : NULL
+ .. .. $ spacing                         : 'simpleUnit' num 6points
+ .. ..  ..- attr(*, "unit")= int 8
+ .. .. $ margins                         : <ggplot2::margin> num [1:4] 6 6 6 6
+ .. .. $ aspect.ratio                    : NULL
+ .. .. $ axis.title                      : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : chr "bold"
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : NULL
+ .. ..  ..@ vjust        : NULL
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : NULL
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi FALSE
+ .. .. $ axis.title.x                    : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : NULL
+ .. ..  ..@ vjust        : num 1
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 3 0 0 0
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ axis.title.x.top                : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : NULL
+ .. ..  ..@ vjust        : num 0
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 3 0
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ axis.title.x.bottom             : NULL
+ .. .. $ axis.title.y                    : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : NULL
+ .. ..  ..@ vjust        : num 1
+ .. ..  ..@ angle        : num 90
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 3 0 0
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ axis.title.y.left               : NULL
+ .. .. $ axis.title.y.right              : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : NULL
+ .. ..  ..@ vjust        : num 1
+ .. ..  ..@ angle        : num -90
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 0 3
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ axis.text                       : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : chr "black"
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : NULL
+ .. ..  ..@ vjust        : NULL
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : NULL
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ axis.text.x                     : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : NULL
+ .. ..  ..@ vjust        : num 1
+ .. ..  ..@ angle        : num 0
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 2.4 0 0 0
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi FALSE
+ .. .. $ axis.text.x.top                 : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : NULL
+ .. ..  ..@ vjust        : num 0
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 2.4 0
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ axis.text.x.bottom              : NULL
+ .. .. $ axis.text.y                     : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : num 11.8
+ .. ..  ..@ hjust        : num 1
+ .. ..  ..@ vjust        : NULL
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 2.4 0 0
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi FALSE
+ .. .. $ axis.text.y.left                : NULL
+ .. .. $ axis.text.y.right               : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : num 0
+ .. ..  ..@ vjust        : NULL
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 0 2.4
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ axis.text.theta                 : NULL
+ .. .. $ axis.text.r                     : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : num 0.5
+ .. ..  ..@ vjust        : NULL
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 2.4 0 2.4
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ axis.ticks                      : <ggplot2::element_line>
+ .. ..  ..@ colour       : chr "black"
+ .. ..  ..@ linewidth    : NULL
+ .. ..  ..@ linetype     : NULL
+ .. ..  ..@ lineend      : NULL
+ .. ..  ..@ linejoin     : NULL
+ .. ..  ..@ arrow        : logi FALSE
+ .. ..  ..@ arrow.fill   : chr "black"
+ .. ..  ..@ inherit.blank: logi FALSE
+ .. .. $ axis.ticks.x                    : NULL
+ .. .. $ axis.ticks.x.top                : NULL
+ .. .. $ axis.ticks.x.bottom             : NULL
+ .. .. $ axis.ticks.y                    : NULL
+ .. .. $ axis.ticks.y.left               : NULL
+ .. .. $ axis.ticks.y.right              : NULL
+ .. .. $ axis.ticks.theta                : NULL
+ .. .. $ axis.ticks.r                    : NULL
+ .. .. $ axis.minor.ticks.x.top          : NULL
+ .. .. $ axis.minor.ticks.x.bottom       : NULL
+ .. .. $ axis.minor.ticks.y.left         : NULL
+ .. .. $ axis.minor.ticks.y.right        : NULL
+ .. .. $ axis.minor.ticks.theta          : NULL
+ .. .. $ axis.minor.ticks.r              : NULL
+ .. .. $ axis.ticks.length               : 'rel' num 0.5
+ .. .. $ axis.ticks.length.x             : NULL
+ .. .. $ axis.ticks.length.x.top         : NULL
+ .. .. $ axis.ticks.length.x.bottom      : NULL
+ .. .. $ axis.ticks.length.y             : NULL
+ .. .. $ axis.ticks.length.y.left        : NULL
+ .. .. $ axis.ticks.length.y.right       : NULL
+ .. .. $ axis.ticks.length.theta         : NULL
+ .. .. $ axis.ticks.length.r             : NULL
+ .. .. $ axis.minor.ticks.length         : 'rel' num 0.75
+ .. .. $ axis.minor.ticks.length.x       : NULL
+ .. .. $ axis.minor.ticks.length.x.top   : NULL
+ .. .. $ axis.minor.ticks.length.x.bottom: NULL
+ .. .. $ axis.minor.ticks.length.y       : NULL
+ .. .. $ axis.minor.ticks.length.y.left  : NULL
+ .. .. $ axis.minor.ticks.length.y.right : NULL
+ .. .. $ axis.minor.ticks.length.theta   : NULL
+ .. .. $ axis.minor.ticks.length.r       : NULL
+ .. .. $ axis.line                       : <ggplot2::element_line>
+ .. ..  ..@ colour       : chr "black"
+ .. ..  ..@ linewidth    : num 0.5
+ .. ..  ..@ linetype     : NULL
+ .. ..  ..@ lineend      : NULL
+ .. ..  ..@ linejoin     : NULL
+ .. ..  ..@ arrow        : logi FALSE
+ .. ..  ..@ arrow.fill   : chr "black"
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ axis.line.x                     : NULL
+ .. .. $ axis.line.x.top                 : NULL
+ .. .. $ axis.line.x.bottom              : NULL
+ .. .. $ axis.line.y                     : NULL
+ .. .. $ axis.line.y.left                : NULL
+ .. .. $ axis.line.y.right               : NULL
+ .. .. $ axis.line.theta                 : NULL
+ .. .. $ axis.line.r                     : NULL
+ .. .. $ legend.background               : <ggplot2::element_rect>
+ .. ..  ..@ fill         : NULL
+ .. ..  ..@ colour       : logi NA
+ .. ..  ..@ linewidth    : NULL
+ .. ..  ..@ linetype     : NULL
+ .. ..  ..@ linejoin     : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ legend.margin                   : NULL
+ .. .. $ legend.spacing                  : 'rel' num 2
+ .. .. $ legend.spacing.x                : NULL
+ .. .. $ legend.spacing.y                : NULL
+ .. .. $ legend.key                      : <ggplot2::element_blank>
+ .. .. $ legend.key.size                 : 'simpleUnit' num 1.2lines
+ .. ..  ..- attr(*, "unit")= int 3
+ .. .. $ legend.key.height               : NULL
+ .. .. $ legend.key.width                : NULL
+ .. .. $ legend.key.spacing              : NULL
+ .. .. $ legend.key.spacing.x            : NULL
+ .. .. $ legend.key.spacing.y            : NULL
+ .. .. $ legend.key.justification        : NULL
+ .. .. $ legend.frame                    : NULL
+ .. .. $ legend.ticks                    : NULL
+ .. .. $ legend.ticks.length             : 'rel' num 0.2
+ .. .. $ legend.axis.line                : NULL
+ .. .. $ legend.text                     : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : NULL
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : 'rel' num 0.8
+ .. ..  ..@ hjust        : NULL
+ .. ..  ..@ vjust        : NULL
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : NULL
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi TRUE
+ .. .. $ legend.text.position            : NULL
+ .. .. $ legend.title                    : <ggplot2::element_text>
+ .. ..  ..@ family       : NULL
+ .. ..  ..@ face         : chr "bold"
+ .. ..  ..@ italic       : chr NA
+ .. ..  ..@ fontweight   : num NA
+ .. ..  ..@ fontwidth    : num NA
+ .. ..  ..@ colour       : NULL
+ .. ..  ..@ size         : NULL
+ .. ..  ..@ hjust        : num 1
+ .. ..  ..@ vjust        : NULL
+ .. ..  ..@ angle        : NULL
+ .. ..  ..@ lineheight   : NULL
+ .. ..  ..@ margin       : NULL
+ .. ..  ..@ debug        : NULL
+ .. ..  ..@ inherit.blank: logi FALSE
+ .. .. $ legend.title.position           : NULL
+ .. .. $ legend.position                 : chr "top"
+ .. .. $ legend.position.inside          : NULL
+ .. .. $ legend.direction                : NULL
+ .. .. $ legend.byrow                    : NULL
+ .. .. $ legend.justification            : chr "center"
+ .. .. $ legend.justification.top        : NULL
+ .. .. $ legend.justification.bottom     : NULL
+ .. .. $ legend.justification.left       : NULL
+ .. .. $ legend.justification.right      : NULL
+ .. .. $ legend.justification.inside     : NULL
+ .. ..  [list output truncated]
+ .. .. @ complete: logi TRUE
+ .. .. @ validate: logi TRUE
+  ..@ coordinates:Classes 'CoordFlip', 'CoordCartesian', 'Coord', 'ggproto', 'gg' <ggproto object: Class CoordFlip, CoordCartesian, Coord, gg>
+    aspect: function
+    backtransform_range: function
+    clip: on
+    default: FALSE
+    distance: function
+    draw_panel: function
+    expand: TRUE
+    is_free: function
+    is_linear: function
+    labels: function
+    limits: list
+    modify_scales: function
+    range: function
+    render_axis_h: function
+    render_axis_v: function
+    render_bg: function
+    render_fg: function
+    reverse: none
+    setup_data: function
+    setup_layout: function
+    setup_panel_guides: function
+    setup_panel_params: function
+    setup_params: function
+    train_panel_guides: function
+    transform: function
+    super:  <ggproto object: Class CoordFlip, CoordCartesian, Coord, gg> 
+  ..@ facet      :Classes 'FacetNull', 'Facet', 'ggproto', 'gg' <ggproto object: Class FacetNull, Facet, gg>
+    attach_axes: function
+    attach_strips: function
+    compute_layout: function
+    draw_back: function
+    draw_front: function
+    draw_labels: function
+    draw_panel_content: function
+    draw_panels: function
+    finish_data: function
+    format_strip_labels: function
+    init_gtable: function
+    init_scales: function
+    map_data: function
+    params: list
+    set_panel_size: function
+    setup_data: function
+    setup_panel_params: function
+    setup_params: function
+    shrink: TRUE
+    train_scales: function
+    vars: function
+    super:  <ggproto object: Class FacetNull, Facet, gg> 
+  ..@ layout     :Classes 'Layout', 'ggproto', 'gg' <ggproto object: Class Layout, gg>
+    coord: NULL
+    coord_params: list
+    facet: NULL
+    facet_params: list
+    finish_data: function
+    get_scales: function
+    layout: NULL
+    map_position: function
+    panel_params: NULL
+    panel_scales_x: NULL
+    panel_scales_y: NULL
+    render: function
+    render_labels: function
+    reset_scales: function
+    resolve_label: function
+    setup: function
+    setup_panel_guides: function
+    setup_panel_params: function
+    train_position: function
+    super:  <ggproto object: Class Layout, gg> 
+  ..@ labels     : <ggplot2::labels> List of 4
+ .. .. $ colour  : chr "Communities"
+ .. .. $ fill    : chr "Communities"
+ .. .. $ linetype: chr "Communities"
+ .. .. $ shape   : chr "Communities"
+  ..@ meta       : list()
+  ..@ plot_env   :<environment: 0x00000237c8334510> 
+ - attr(*, "class")= chr "itemStability"
+ - attr(*, "methods")=List of 3
+  ..$ EGA.type: chr "ega"
+  ..$ iter    : int 20
+  ..$ type    : chr "resampling"
+ - attr(*, "color")= chr [1:3] "#F03D2D" "#90DDF0" "#C8D96F"
+
+--- itemStability$membership ---
+class: list
+names: [1] "empirical" "bootstrap" "structure"
+str:
+List of 3
+ $ empirical: 'EGA.community' Named num [1:12] 1 1 1 1 2 2 2 3 3 3 ...
+  ..- attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..- attr(*, "methods")=List of 2
+ $ bootstrap: num [1:20, 1:12] 1 1 1 1 1 1 1 1 1 1 ...
+  ..- attr(*, "dimnames")=List of 2
+ $ structure: 'EGA.community' Named num [1:12] 1 1 1 1 2 2 2 3 3 3 ...
+  ..- attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+  ..- attr(*, "methods")=List of 2
+
+--- itemStability$item.stability ---
+class: list
+names: [1] "empirical.dimensions" "all.dimensions"      
+str:
+List of 2
+ $ empirical.dimensions: Named num [1:12] 1 1 1 1 1 0.95 1 0.85 1 1 ...
+  ..- attr(*, "names")= chr [1:12] "item_001" "item_002" "item_003" "item_004" ...
+ $ all.dimensions      : num [1:12, 1:3] 1 1 1 1 0 0 0 0 0 0 ...
+  ..- attr(*, "dimnames")=List of 2
+
+--- itemStability$plot ---
+class: ggplot2::ggplot, ggplot, ggplot2::gg, S7_object, gg
+names: NULL
+str:
+<ggplot2::ggplot>
+ @ data       :'data.frame':	12 obs. of  3 variables:
+ .. $ Node       : Factor w/ 12 levels "item_001","item_002",..: 1 2 3 4 5 6 7 8 9 10 ...
+ .. $ Replication: num  1 1 1 1 1 1 0.95 1 1 1 ...
+ .. $ Community  : Factor w/ 3 levels "1","2","3": 1 1 1 1 2 2 2 3 3 3 ...
+ @ layers     :List of 3
+ .. $ geom_linerange:Classes 'LayerInstance', 'Layer', 'ggproto', 'gg' <ggproto object: Class LayerInstance, Layer, gg>
+    aes_params: list
+    compute_aesthetics: function
+    compute_geom_1: function
+    compute_geom_2: function
+    compute_position: function
+    compute_statistic: function
+    computed_geom_params: NULL
+    computed_mapping: NULL
+    computed_stat_params: NULL
+    constructor: call
+    data: data.frame
+    draw_geom: function
+    finish_statistics: function
+    geom: <ggproto object: Class GeomLinerange, Geom, gg>
+        aesthetics: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        draw_group: function
+        draw_key: function
+        draw_layer: function
+        draw_panel: function
+        extra_params: na.rm orientation
+        handle_na: function
+        non_missing_aes: 
+        optional_aes: 
+        parameters: function
+        rename_size: TRUE
+        required_aes: x|y ymin|xmin ymax|xmax
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Geom, gg>
+    geom_params: list
+    inherit.aes: TRUE
+    layer_data: function
+    layout: NULL
+    map_statistic: function
+    mapping: ggplot2::mapping, uneval, gg, S7_object
+    name: NULL
+    position: <ggproto object: Class PositionIdentity, Position, gg>
+        aesthetics: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        required_aes: 
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Position, gg>
+    print: function
+    setup_layer: function
+    show.legend: NA
+    stat: <ggproto object: Class StatIdentity, Stat, gg>
+        aesthetics: function
+        compute_group: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        dropped_aes: 
+        extra_params: na.rm
+        finish_layer: function
+        non_missing_aes: 
+        optional_aes: 
+        parameters: function
+        required_aes: 
+        retransform: TRUE
+        setup_data: function
+        setup_params: function
+        super:  <ggproto object: Class Stat, gg>
+    stat_params: list
+    super:  <ggproto object: Class Layer, gg> 
+ .. $ geom_point    :Classes 'LayerInstance', 'Layer', 'ggproto', 'gg' <ggproto object: Class LayerInstance, Layer, gg>
+    aes_params: list
+    compute_aesthetics: function
+    compute_geom_1: function
+    compute_geom_2: function
+    compute_position: function
+    compute_statistic: function
+    computed_geom_params: NULL
+    computed_mapping: NULL
+    computed_stat_params: NULL
+    constructor: call
+    data: data.frame
+    draw_geom: function
+    finish_statistics: function
+    geom: <ggproto object: Class GeomPoint, Geom, gg>
+        aesthetics: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        draw_group: function
+        draw_key: function
+        draw_layer: function
+        draw_panel: function
+        extra_params: na.rm
+        handle_na: function
+        non_missing_aes: size shape colour
+        optional_aes: 
+        parameters: function
+        rename_size: FALSE
+        required_aes: x y
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Geom, gg>
+    geom_params: list
+    inherit.aes: TRUE
+    layer_data: function
+    layout: NULL
+    map_statistic: function
+    mapping: ggplot2::mapping, uneval, gg, S7_object
+    name: NULL
+    position: <ggproto object: Class PositionIdentity, Position, gg>
+        aesthetics: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        required_aes: 
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Position, gg>
+    print: function
+    setup_layer: function
+    show.legend: NA
+    stat: <ggproto object: Class StatIdentity, Stat, gg>
+        aesthetics: function
+        compute_group: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        dropped_aes: 
+        extra_params: na.rm
+        finish_layer: function
+        non_missing_aes: 
+        optional_aes: 
+        parameters: function
+        required_aes: 
+        retransform: TRUE
+        setup_data: function
+        setup_params: function
+        super:  <ggproto object: Class Stat, gg>
+    stat_params: list
+    super:  <ggproto object: Class Layer, gg> 
+ .. $ geom_text     :Classes 'LayerInstance', 'Layer', 'ggproto', 'gg' <ggproto object: Class LayerInstance, Layer, gg>
+    aes_params: list
+    compute_aesthetics: function
+    compute_geom_1: function
+    compute_geom_2: function
+    compute_position: function
+    compute_statistic: function
+    computed_geom_params: NULL
+    computed_mapping: NULL
+    computed_stat_params: NULL
+    constructor: call
+    data: data.frame
+    draw_geom: function
+    finish_statistics: function
+    geom: <ggproto object: Class GeomText, Geom, gg>
+        aesthetics: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        draw_group: function
+        draw_key: function
+        draw_layer: function
+        draw_panel: function
+        extra_params: na.rm
+        handle_na: function
+        non_missing_aes: angle
+        optional_aes: 
+        parameters: function
+        rename_size: FALSE
+        required_aes: x y label
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Geom, gg>
+    geom_params: list
+    inherit.aes: TRUE
+    layer_data: function
+    layout: NULL
+    map_statistic: function
+    mapping: ggplot2::mapping, uneval, gg, S7_object
+    name: NULL
+    position: <ggproto object: Class PositionIdentity, Position, gg>
+        aesthetics: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        required_aes: 
+        setup_data: function
+        setup_params: function
+        use_defaults: function
+        super:  <ggproto object: Class Position, gg>
+    print: function
+    setup_layer: function
+    show.legend: NA
+    stat: <ggproto object: Class StatIdentity, Stat, gg>
+        aesthetics: function
+        compute_group: function
+        compute_layer: function
+        compute_panel: function
+        default_aes: ggplot2::mapping, uneval, gg, S7_object
+        dropped_aes: 
+        extra_params: na.rm
+        finish_layer: function
+        non_missing_aes: 
+        optional_aes: 
+        parameters: function
+        required_aes: 
+        retransform: TRUE
+        setup_data: function
+        setup_params: function
+        super:  <ggproto object: Class Stat, gg>
+    stat_params: list
+    super:  <ggproto object: Class Layer, gg> 
+ @ scales     :Classes 'ScalesList', 'ggproto', 'gg' <ggproto object: Class ScalesList, gg>
+    add: function
+    add_defaults: function
+    add_missing: function
+    backtransform_df: function
+    clone: function
+    find: function
+    get_scales: function
+    has_scale: function
+    input: function
+    map_df: function
+    n: function
+    non_position_scales: function
+    scales: list
+    set_palettes: function
+    train_df: function
+    transform_df: function
+    super:  <ggproto object: Class ScalesList, gg> 
+ @ guides     :Classes 'Guides', 'ggproto', 'gg' <ggproto object: Class Guides, gg>
+    add: function
+    assemble: function
+    build: function
+    draw: function
+    get_custom: function
+    get_guide: function
+    get_params: function
+    get_position: function
+    guides: NULL
+    merge: function
+    missing: <ggproto object: Class GuideNone, Guide, gg>
+        add_title: function
+        arrange_layout: function
+        assemble_drawing: function
+        available_aes: any
+        build_decor: function
+        build_labels: function
+        build_ticks: function
+        build_title: function
+        draw: function
+        draw_early_exit: function
+        elements: list
+        extract_decor: function
+        extract_key: function
+        extract_params: function
+        get_layer_key: function
+        hashables: list
+        measure_grobs: function
+        merge: function
+        override_elements: function
+        params: list
+        process_layers: function
+        setup_elements: function
+        setup_params: function
+        train: function
+        transform: function
+        super:  <ggproto object: Class GuideNone, Guide, gg>
+    package_box: function
+    print: function
+    process_layers: function
+    setup: function
+    subset_guides: function
+    train: function
+    update_params: function
+    super:  <ggproto object: Class Guides, gg> 
+ @ mapping    : <ggplot2::mapping> List of 2
+ .. $ x: language ~Node
+ ..  ..- attr(*, ".Environment")=<environment: 0x00000237c7797540> 
+ .. $ y: language ~Replication
+ ..  ..- attr(*, ".Environment")=<environment: 0x00000237c7797540> 
+ @ theme      : <theme> List of 144
+ .. $ line                            : <ggplot2::element_line>
+ ..  ..@ colour       : chr "black"
+ ..  ..@ linewidth    : num 0.545
+ ..  ..@ linetype     : num 1
+ ..  ..@ lineend      : chr "butt"
+ ..  ..@ linejoin     : chr "round"
+ ..  ..@ arrow        : logi FALSE
+ ..  ..@ arrow.fill   : chr "black"
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ rect                            : <ggplot2::element_rect>
+ ..  ..@ fill         : chr "white"
+ ..  ..@ colour       : chr "black"
+ ..  ..@ linewidth    : num 0.545
+ ..  ..@ linetype     : num 1
+ ..  ..@ linejoin     : chr "round"
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ text                            : <ggplot2::element_text>
+ ..  ..@ family       : chr ""
+ ..  ..@ face         : chr "plain"
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : chr "black"
+ ..  ..@ size         : num 12
+ ..  ..@ hjust        : num 0.5
+ ..  ..@ vjust        : num 0.5
+ ..  ..@ angle        : num 0
+ ..  ..@ lineheight   : num 0.9
+ ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 0 0
+ ..  ..@ debug        : logi FALSE
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ title                           : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : NULL
+ ..  ..@ vjust        : NULL
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : NULL
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ point                           : <ggplot2::element_point>
+ ..  ..@ colour       : chr "black"
+ ..  ..@ shape        : num 19
+ ..  ..@ size         : num 1.64
+ ..  ..@ fill         : chr "white"
+ ..  ..@ stroke       : num 0.545
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ polygon                         : <ggplot2::element_polygon>
+ ..  ..@ fill         : chr "white"
+ ..  ..@ colour       : chr "black"
+ ..  ..@ linewidth    : num 0.545
+ ..  ..@ linetype     : num 1
+ ..  ..@ linejoin     : chr "round"
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ geom                            : <ggplot2::element_geom>
+ ..  ..@ ink        : chr "black"
+ ..  ..@ paper      : chr "white"
+ ..  ..@ accent     : chr "#3366FF"
+ ..  ..@ linewidth  : num 0.545
+ ..  ..@ borderwidth: num 0.545
+ ..  ..@ linetype   : int 1
+ ..  ..@ bordertype : int 1
+ ..  ..@ family     : chr ""
+ ..  ..@ fontsize   : num 4.22
+ ..  ..@ pointsize  : num 1.64
+ ..  ..@ pointshape : num 19
+ ..  ..@ colour     : NULL
+ ..  ..@ fill       : NULL
+ .. $ spacing                         : 'simpleUnit' num 6points
+ ..  ..- attr(*, "unit")= int 8
+ .. $ margins                         : <ggplot2::margin> num [1:4] 6 6 6 6
+ .. $ aspect.ratio                    : NULL
+ .. $ axis.title                      : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : chr "bold"
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : NULL
+ ..  ..@ vjust        : NULL
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : NULL
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi FALSE
+ .. $ axis.title.x                    : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : NULL
+ ..  ..@ vjust        : num 1
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : <ggplot2::margin> num [1:4] 3 0 0 0
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ axis.title.x.top                : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : NULL
+ ..  ..@ vjust        : num 0
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 3 0
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ axis.title.x.bottom             : NULL
+ .. $ axis.title.y                    : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : NULL
+ ..  ..@ vjust        : num 1
+ ..  ..@ angle        : num 90
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 3 0 0
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ axis.title.y.left               : NULL
+ .. $ axis.title.y.right              : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : NULL
+ ..  ..@ vjust        : num 1
+ ..  ..@ angle        : num -90
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 0 3
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ axis.text                       : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : chr "black"
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : NULL
+ ..  ..@ vjust        : NULL
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : NULL
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ axis.text.x                     : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : NULL
+ ..  ..@ vjust        : num 1
+ ..  ..@ angle        : num 0
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : <ggplot2::margin> num [1:4] 2.4 0 0 0
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi FALSE
+ .. $ axis.text.x.top                 : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : NULL
+ ..  ..@ vjust        : num 0
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 2.4 0
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ axis.text.x.bottom              : NULL
+ .. $ axis.text.y                     : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : num 11.8
+ ..  ..@ hjust        : num 1
+ ..  ..@ vjust        : NULL
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 2.4 0 0
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi FALSE
+ .. $ axis.text.y.left                : NULL
+ .. $ axis.text.y.right               : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : num 0
+ ..  ..@ vjust        : NULL
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 0 0 2.4
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ axis.text.theta                 : NULL
+ .. $ axis.text.r                     : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : num 0.5
+ ..  ..@ vjust        : NULL
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : <ggplot2::margin> num [1:4] 0 2.4 0 2.4
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ axis.ticks                      : <ggplot2::element_line>
+ ..  ..@ colour       : chr "black"
+ ..  ..@ linewidth    : NULL
+ ..  ..@ linetype     : NULL
+ ..  ..@ lineend      : NULL
+ ..  ..@ linejoin     : NULL
+ ..  ..@ arrow        : logi FALSE
+ ..  ..@ arrow.fill   : chr "black"
+ ..  ..@ inherit.blank: logi FALSE
+ .. $ axis.ticks.x                    : NULL
+ .. $ axis.ticks.x.top                : NULL
+ .. $ axis.ticks.x.bottom             : NULL
+ .. $ axis.ticks.y                    : NULL
+ .. $ axis.ticks.y.left               : NULL
+ .. $ axis.ticks.y.right              : NULL
+ .. $ axis.ticks.theta                : NULL
+ .. $ axis.ticks.r                    : NULL
+ .. $ axis.minor.ticks.x.top          : NULL
+ .. $ axis.minor.ticks.x.bottom       : NULL
+ .. $ axis.minor.ticks.y.left         : NULL
+ .. $ axis.minor.ticks.y.right        : NULL
+ .. $ axis.minor.ticks.theta          : NULL
+ .. $ axis.minor.ticks.r              : NULL
+ .. $ axis.ticks.length               : 'rel' num 0.5
+ .. $ axis.ticks.length.x             : NULL
+ .. $ axis.ticks.length.x.top         : NULL
+ .. $ axis.ticks.length.x.bottom      : NULL
+ .. $ axis.ticks.length.y             : NULL
+ .. $ axis.ticks.length.y.left        : NULL
+ .. $ axis.ticks.length.y.right       : NULL
+ .. $ axis.ticks.length.theta         : NULL
+ .. $ axis.ticks.length.r             : NULL
+ .. $ axis.minor.ticks.length         : 'rel' num 0.75
+ .. $ axis.minor.ticks.length.x       : NULL
+ .. $ axis.minor.ticks.length.x.top   : NULL
+ .. $ axis.minor.ticks.length.x.bottom: NULL
+ .. $ axis.minor.ticks.length.y       : NULL
+ .. $ axis.minor.ticks.length.y.left  : NULL
+ .. $ axis.minor.ticks.length.y.right : NULL
+ .. $ axis.minor.ticks.length.theta   : NULL
+ .. $ axis.minor.ticks.length.r       : NULL
+ .. $ axis.line                       : <ggplot2::element_line>
+ ..  ..@ colour       : chr "black"
+ ..  ..@ linewidth    : num 0.5
+ ..  ..@ linetype     : NULL
+ ..  ..@ lineend      : NULL
+ ..  ..@ linejoin     : NULL
+ ..  ..@ arrow        : logi FALSE
+ ..  ..@ arrow.fill   : chr "black"
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ axis.line.x                     : NULL
+ .. $ axis.line.x.top                 : NULL
+ .. $ axis.line.x.bottom              : NULL
+ .. $ axis.line.y                     : NULL
+ .. $ axis.line.y.left                : NULL
+ .. $ axis.line.y.right               : NULL
+ .. $ axis.line.theta                 : NULL
+ .. $ axis.line.r                     : NULL
+ .. $ legend.background               : <ggplot2::element_rect>
+ ..  ..@ fill         : NULL
+ ..  ..@ colour       : logi NA
+ ..  ..@ linewidth    : NULL
+ ..  ..@ linetype     : NULL
+ ..  ..@ linejoin     : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ legend.margin                   : NULL
+ .. $ legend.spacing                  : 'rel' num 2
+ .. $ legend.spacing.x                : NULL
+ .. $ legend.spacing.y                : NULL
+ .. $ legend.key                      : <ggplot2::element_blank>
+ .. $ legend.key.size                 : 'simpleUnit' num 1.2lines
+ ..  ..- attr(*, "unit")= int 3
+ .. $ legend.key.height               : NULL
+ .. $ legend.key.width                : NULL
+ .. $ legend.key.spacing              : NULL
+ .. $ legend.key.spacing.x            : NULL
+ .. $ legend.key.spacing.y            : NULL
+ .. $ legend.key.justification        : NULL
+ .. $ legend.frame                    : NULL
+ .. $ legend.ticks                    : NULL
+ .. $ legend.ticks.length             : 'rel' num 0.2
+ .. $ legend.axis.line                : NULL
+ .. $ legend.text                     : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : NULL
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : 'rel' num 0.8
+ ..  ..@ hjust        : NULL
+ ..  ..@ vjust        : NULL
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : NULL
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi TRUE
+ .. $ legend.text.position            : NULL
+ .. $ legend.title                    : <ggplot2::element_text>
+ ..  ..@ family       : NULL
+ ..  ..@ face         : chr "bold"
+ ..  ..@ italic       : chr NA
+ ..  ..@ fontweight   : num NA
+ ..  ..@ fontwidth    : num NA
+ ..  ..@ colour       : NULL
+ ..  ..@ size         : NULL
+ ..  ..@ hjust        : num 1
+ ..  ..@ vjust        : NULL
+ ..  ..@ angle        : NULL
+ ..  ..@ lineheight   : NULL
+ ..  ..@ margin       : NULL
+ ..  ..@ debug        : NULL
+ ..  ..@ inherit.blank: logi FALSE
+ .. $ legend.title.position           : NULL
+ .. $ legend.position                 : chr "top"
+ .. $ legend.position.inside          : NULL
+ .. $ legend.direction                : NULL
+ .. $ legend.byrow                    : NULL
+ .. $ legend.justification            : chr "center"
+ .. $ legend.justification.top        : NULL
+ .. $ legend.justification.bottom     : NULL
+ .. $ legend.justification.left       : NULL
+ .. $ legend.justification.right      : NULL
+ .. $ legend.justification.inside     : NULL
+ ..  [list output truncated]
+ .. @ complete: logi TRUE
+ .. @ validate: logi TRUE
+ @ coordinates:Classes 'CoordFlip', 'CoordCartesian', 'Coord', 'ggproto', 'gg' <ggproto object: Class CoordFlip, CoordCartesian, Coord, gg>
+    aspect: function
+    backtransform_range: function
+    clip: on
+    default: FALSE
+    distance: function
+    draw_panel: function
+    expand: TRUE
+    is_free: function
+    is_linear: function
+    labels: function
+    limits: list
+    modify_scales: function
+    range: function
+    render_axis_h: function
+    render_axis_v: function
+    render_bg: function
+    render_fg: function
+    reverse: none
+    setup_data: function
+    setup_layout: function
+    setup_panel_guides: function
+    setup_panel_params: function
+    setup_params: function
+    train_panel_guides: function
+    transform: function
+    super:  <ggproto object: Class CoordFlip, CoordCartesian, Coord, gg> 
+ @ facet      :Classes 'FacetNull', 'Facet', 'ggproto', 'gg' <ggproto object: Class FacetNull, Facet, gg>
+    attach_axes: function
+    attach_strips: function
+    compute_layout: function
+    draw_back: function
+    draw_front: function
+    draw_labels: function
+    draw_panel_content: function
+    draw_panels: function
+    finish_data: function
+    format_strip_labels: function
+    init_gtable: function
+    init_scales: function
+    map_data: function
+    params: list
+    set_panel_size: function
+    setup_data: function
+    setup_panel_params: function
+    setup_params: function
+    shrink: TRUE
+    train_scales: function
+    vars: function
+    super:  <ggproto object: Class FacetNull, Facet, gg> 
+ @ layout     :Classes 'Layout', 'ggproto', 'gg' <ggproto object: Class Layout, gg>
+    coord: NULL
+    coord_params: list
+    facet: NULL
+    facet_params: list
+    finish_data: function
+    get_scales: function
+    layout: NULL
+    map_position: function
+    panel_params: NULL
+    panel_scales_x: NULL
+    panel_scales_y: NULL
+    render: function
+    render_labels: function
+    reset_scales: function
+    resolve_label: function
+    setup: function
+    setup_panel_guides: function
+    setup_panel_params: function
+    train_position: function
+    super:  <ggproto object: Class Layout, gg> 
+ @ labels     : <ggplot2::labels> List of 4
+ .. $ colour  : chr "Communities"
+ .. $ fill    : chr "Communities"
+ .. $ linetype: chr "Communities"
+ .. $ shape   : chr "Communities"
+ @ meta       : list()
+ @ plot_env   :<environment: 0x00000237c8334510> 
+
+--- itemStability$membership (if present) ---
+$empirical
+Algorithm:  Walktrap
+
+Number of communities:  3
+
+item_001 item_002 item_003 item_004 item_005 item_006 item_007 item_008 item_009 item_010 item_011 
+       1        1        1        1        2        2        2        3        3        3        3 
+item_012 
+       3 
+
+$bootstrap
+      item_001 item_002 item_003 item_004 item_005 item_006 item_007 item_008 item_009 item_010
+ [1,]        1        1        1        1        2        2        2        3        3        3
+ [2,]        1        1        1        1        2        2        2        3        3        3
+ [3,]        1        1        1        1        2        2        2        3        3        3
+ [4,]        1        1        1        1        2        2        2        3        3        3
+ [5,]        1        1        1        1        2        2        2        3        3        3
+ [6,]        1        1        1        1        2        2        2        3        3        3
+ [7,]        1        1        1        1        2        2        2        3        3        3
+ [8,]        1        1        1        1        2        2        2        3        3        3
+ [9,]        1        1        1        1        2        3        2        3        3        3
+[10,]        1        1        1        1        2        2        2        3        3        3
+[11,]        1        1        1        1        2        2        2        3        3        3
+[12,]        1        1        1        1        2        2        2        3        3        3
+[13,]        1        1        1        1        2        2        2        2        3        3
+[14,]        1        1        1        1        2        2        2        3        3        3
+[15,]        1        1        1        1        2        2        2        3        3        3
+[16,]        1        1        1        1        2        2        2        3        3        3
+[17,]        1        1        1        1        2        2        2        3        3        3
+[18,]        1        1        1        1        2        2        2        3        3        3
+[19,]        1        1        1        1        2        2        2        2        3        3
+[20,]        1        1        1        1        2        2        2        2        3        3
+      item_011 item_012
+ [1,]        3        3
+ [2,]        3        3
+ [3,]        3        3
+ [4,]        3        3
+ [5,]        3        3
+ [6,]        3        3
+ [7,]        3        3
+ [8,]        3        3
+ [9,]        3        3
+[10,]        3        3
+[11,]        3        3
+[12,]        3        3
+[13,]        3        3
+[14,]        3        3
+[15,]        3        3
+[16,]        3        3
+[17,]        3        3
+[18,]        3        3
+[19,]        3        3
+[20,]        3        3
+
+$structure
+Algorithm:  Walktrap
+
+Number of communities:  3
+
+item_001 item_002 item_003 item_004 item_005 item_006 item_007 item_008 item_009 item_010 item_011 
+       1        1        1        1        2        2        2        3        3        3        3 
+item_012 
+       3 
+
+
+--- itemStability$item.stability (if present) ---
+$empirical.dimensions
+item_001 item_002 item_003 item_004 item_005 item_006 item_007 item_008 item_009 item_010 item_011 
+    1.00     1.00     1.00     1.00     1.00     0.95     1.00     0.85     1.00     1.00     1.00 
+item_012 
+    1.00 
+
+$all.dimensions
+         1    2    3
+item_001 1 0.00 0.00
+item_002 1 0.00 0.00
+item_003 1 0.00 0.00
+item_004 1 0.00 0.00
+item_005 0 1.00 0.00
+item_006 0 0.95 0.05
+item_007 0 1.00 0.00
+item_008 0 0.15 0.85
+item_009 0 0.00 1.00
+item_010 0 0.00 1.00
+item_011 0 0.00 1.00
+item_012 0 0.00 1.00
+
+
+--- per-item path: itemStability(boot)$item.stability$empirical.dimensions ---
+item_001 item_002 item_003 item_004 item_005 item_006 item_007 item_008 item_009 item_010 item_011 
+    1.00     1.00     1.00     1.00     1.00     0.95     1.00     0.85     1.00     1.00     1.00 
+item_012 
+    1.00 
+
+--- same values already stored at bootEGA$stability$item.stability$item.stability$empirical.dimensions? ---
+TRUE 
+
+==========================================================================================
+7a. Sample ordinal response data frame
+==========================================================================================
+response df dim:  200 x 6 
+'data.frame':	200 obs. of  6 variables:
+ $ a1: int  1 3 2 4 5 2 5 5 1 5 ...
+ $ a2: int  5 3 2 3 2 3 1 4 4 3 ...
+ $ a3: int  2 3 1 5 3 2 3 4 1 4 ...
+ $ b1: int  3 5 3 4 5 5 2 4 5 2 ...
+ $ b2: int  1 5 4 2 5 5 5 4 4 3 ...
+ $ b3: int  3 5 3 5 3 4 4 4 4 4 ...
+category counts, item a1:
+
+ 1  2  3  4  5 
+45 44 39 36 36 
+
+==========================================================================================
+7b. lavaan::cfa (ordered, estimator = 'WLSMV', std.lv = TRUE)
+==========================================================================================
+model syntax:
+F1 =~ a1 + a2 + a3
+F2 =~ b1 + b2 + b3
+captured warnings:  0 
+class(fit):  lavaan 
+lavInspect(fit, 'converged'):  TRUE 
+lavInspect(fit, 'options')$estimator:  DWLS 
+
+==========================================================================================
+7c. fitMeasures()
+==========================================================================================
+
+--- fitMeasures(fit) (all) ---
+class: lavaan.vector, numeric
+names:  [1] "npar"                          "fmin"                          "chisq"                        
+ [4] "df"                            "pvalue"                        "chisq.scaled"                 
+ [7] "df.scaled"                     "pvalue.scaled"                 "chisq.scaling.factor"         
+[10] "baseline.chisq"                "baseline.df"                   "baseline.pvalue"              
+[13] "baseline.chisq.scaled"         "baseline.df.scaled"            "baseline.pvalue.scaled"       
+[16] "baseline.chisq.scaling.factor" "cfi"                           "tli"                          
+[19] "cfi.scaled"                    "tli.scaled"                    "cfi.robust"                   
+[22] "tli.robust"                    "nnfi"                          "rfi"                          
+[25] "nfi"                           "pnfi"                          "ifi"                          
+[28] "rni"                           "nnfi.scaled"                   "rfi.scaled"                   
+[31] "nfi.scaled"                    "pnfi.scaled"                   "ifi.scaled"                   
+[34] "rni.scaled"                    "nnfi.robust"                   "rni.robust"                   
+[37] "rmsea"                         "rmsea.ci.lower"                "rmsea.ci.upper"               
+[40] "rmsea.ci.level"                "rmsea.pvalue"                  "rmsea.close.h0"               
+[43] "rmsea.notclose.pvalue"         "rmsea.notclose.h0"             "rmsea.scaled"                 
+[46] "rmsea.ci.lower.scaled"         "rmsea.ci.upper.scaled"         "rmsea.pvalue.scaled"          
+[49] "rmsea.notclose.pvalue.scaled"  "rmsea.robust"                  "rmsea.ci.lower.robust"        
+[52] "rmsea.ci.upper.robust"         "rmsea.pvalue.robust"           "rmsea.notclose.pvalue.robust" 
+[55] "rmr"                           "rmr_nomean"                    "srmr"                         
+[58] "srmr_bentler"                  "srmr_bentler_nomean"           "crmr"                         
+[61] "crmr_nomean"                   "srmr_mplus"                    "srmr_mplus_nomean"            
+[64] "cn_05"                         "cn_01"                         "gfi"                          
+[67] "agfi"                          "pgfi"                          "mfi"                          
+[70] "wrmr"                         
+str:
+ 'lavaan.vector' Named num [1:70] 31 0.0118 4.7129 8 NA ...
+ - attr(*, "names")= chr [1:70] "npar" "fmin" "chisq" "df" ...
+ - attr(*, "scaled.test")= chr "scaled.shifted"
+
+all fitMeasures names:
+ [1] "npar"                          "fmin"                          "chisq"                        
+ [4] "df"                            "pvalue"                        "chisq.scaled"                 
+ [7] "df.scaled"                     "pvalue.scaled"                 "chisq.scaling.factor"         
+[10] "baseline.chisq"                "baseline.df"                   "baseline.pvalue"              
+[13] "baseline.chisq.scaled"         "baseline.df.scaled"            "baseline.pvalue.scaled"       
+[16] "baseline.chisq.scaling.factor" "cfi"                           "tli"                          
+[19] "cfi.scaled"                    "tli.scaled"                    "cfi.robust"                   
+[22] "tli.robust"                    "nnfi"                          "rfi"                          
+[25] "nfi"                           "pnfi"                          "ifi"                          
+[28] "rni"                           "nnfi.scaled"                   "rfi.scaled"                   
+[31] "nfi.scaled"                    "pnfi.scaled"                   "ifi.scaled"                   
+[34] "rni.scaled"                    "nnfi.robust"                   "rni.robust"                   
+[37] "rmsea"                         "rmsea.ci.lower"                "rmsea.ci.upper"               
+[40] "rmsea.ci.level"                "rmsea.pvalue"                  "rmsea.close.h0"               
+[43] "rmsea.notclose.pvalue"         "rmsea.notclose.h0"             "rmsea.scaled"                 
+[46] "rmsea.ci.lower.scaled"         "rmsea.ci.upper.scaled"         "rmsea.pvalue.scaled"          
+[49] "rmsea.notclose.pvalue.scaled"  "rmsea.robust"                  "rmsea.ci.lower.robust"        
+[52] "rmsea.ci.upper.robust"         "rmsea.pvalue.robust"           "rmsea.notclose.pvalue.robust" 
+[55] "rmr"                           "rmr_nomean"                    "srmr"                         
+[58] "srmr_bentler"                  "srmr_bentler_nomean"           "crmr"                         
+[61] "crmr_nomean"                   "srmr_mplus"                    "srmr_mplus_nomean"            
+[64] "cn_05"                         "cn_01"                         "gfi"                          
+[67] "agfi"                          "pgfi"                          "mfi"                          
+[70] "wrmr"                         
+
+wanted names present in fitMeasures(fit): 
+[1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+
+fitMeasures(fit, wanted):
+         chisq             df         pvalue            cfi            tli          rmsea 
+         4.713          8.000             NA          1.000          1.020          0.000 
+rmsea.ci.lower rmsea.ci.upper           srmr 
+         0.000          0.055          0.035 
+
+--- fitMeasures(fit, wanted) ---
+class: lavaan.vector, numeric
+names: [1] "chisq"          "df"             "pvalue"         "cfi"            "tli"           
+[6] "rmsea"          "rmsea.ci.lower" "rmsea.ci.upper" "srmr"          
+str:
+ 'lavaan.vector' Named num [1:9] 4.71 8 NA 1 1.02 ...
+ - attr(*, "names")= chr [1:9] "chisq" "df" "pvalue" "cfi" ...
+
+unname(fitMeasures(fit, 'cfi')): [1] 1
+
+Note: with WLSMV, check whether '.scaled' / '.robust' variants exist in the names above
+and which of them the unsuffixed 'cfi' / 'rmsea' correspond to.
+
+scaled / robust variants:
+         chisq.scaled             df.scaled         pvalue.scaled            cfi.scaled 
+                7.409                 8.000                 0.493                 1.000 
+           tli.scaled          rmsea.scaled            cfi.robust            tli.robust 
+                1.005                 0.000                 0.995                 0.991 
+         rmsea.robust rmsea.ci.lower.scaled rmsea.ci.upper.scaled rmsea.ci.lower.robust 
+                0.025                 0.000                 0.079                 0.000 
+rmsea.ci.upper.robust 
+                0.103 
+
+==========================================================================================
+7d. standardizedSolution()
+==========================================================================================
+str(standardizedSolution(fit)):
+Classes 'lavaan.data.frame' and 'data.frame':	53 obs. of  9 variables:
+ $ lhs     : chr  "F1" "F1" "F1" "F2" ...
+ $ op      : chr  "=~" "=~" "=~" "=~" ...
+ $ rhs     : chr  "a1" "a2" "a3" "b1" ...
+ $ est.std : num  0.768 0.555 0.714 0.637 0.424 ...
+ $ se      : num  0.0726 0.0689 0.0697 0.08 0.0856 ...
+ $ z       : num  10.57 8.05 10.24 7.96 4.96 ...
+ $ pvalue  : num  0.00 8.88e-16 0.00 1.78e-15 7.16e-07 ...
+ $ ci.lower: num  0.626 0.42 0.577 0.48 0.256 ...
+ $ ci.upper: num  0.91 0.69 0.851 0.794 0.592 ...
+
+names: [1] "lhs"      "op"       "rhs"      "est.std"  "se"       "z"        "pvalue"   "ci.lower"
+[9] "ci.upper"
+
+full table:
+   lhs  op rhs est.std    se      z pvalue ci.lower ci.upper
+1   F1  =~  a1   0.768 0.073 10.571  0.000    0.626    0.910
+2   F1  =~  a2   0.555 0.069  8.054  0.000    0.420    0.690
+3   F1  =~  a3   0.714 0.070 10.243  0.000    0.577    0.851
+4   F2  =~  b1   0.637 0.080  7.963  0.000    0.480    0.794
+5   F2  =~  b2   0.424 0.086  4.957  0.000    0.256    0.592
+6   F2  =~  b3   0.686 0.085  8.040  0.000    0.519    0.853
+7   a1   |  t1  -0.755 0.099 -7.654  0.000   -0.949   -0.562
+8   a1   |  t2  -0.138 0.089 -1.551  0.121   -0.313    0.036
+9   a1   |  t3   0.358 0.091  3.941  0.000    0.180    0.537
+10  a1   |  t4   0.915 0.104  8.819  0.000    0.712    1.119
+11  a2   |  t1  -0.878 0.102 -8.567  0.000   -1.079   -0.677
+12  a2   |  t2  -0.253 0.090 -2.818  0.005   -0.430   -0.077
+13  a2   |  t3   0.279 0.090  3.100  0.002    0.103    0.456
+14  a2   |  t4   0.860 0.102  8.439  0.000    0.660    1.059
+15  a3   |  t1  -0.722 0.098 -7.387  0.000   -0.914   -0.531
+16  a3   |  t2  -0.113 0.089 -1.269  0.204   -0.288    0.061
+17  a3   |  t3   0.399 0.091  4.361  0.000    0.220    0.578
+18  a3   |  t4   1.103 0.112  9.887  0.000    0.884    1.322
+19  b1   |  t1  -0.842 0.101 -8.310  0.000   -1.040   -0.643
+20  b1   |  t2  -0.240 0.090 -2.678  0.007   -0.416   -0.064
+21  b1   |  t3   0.266 0.090  2.959  0.003    0.090    0.443
+22  b1   |  t4   0.878 0.102  8.567  0.000    0.677    1.079
+23  b2   |  t1  -0.935 0.104 -8.944  0.000   -1.139   -0.730
+24  b2   |  t2  -0.279 0.090 -3.100  0.002   -0.456   -0.103
+25  b2   |  t3   0.319 0.091  3.521  0.000    0.141    0.496
+26  b2   |  t4   1.015 0.108  9.430  0.000    0.804    1.226
+27  b3   |  t1  -0.954 0.105 -9.068  0.000   -1.160   -0.748
+28  b3   |  t2  -0.372 0.091 -4.081  0.000   -0.550   -0.193
+29  b3   |  t3   0.266 0.090  2.959  0.003    0.090    0.443
+30  b3   |  t4   0.806 0.100  8.049  0.000    0.610    1.003
+31  a1  ~~  a1   0.410 0.112  3.677  0.000    0.192    0.629
+32  a2  ~~  a2   0.692 0.077  9.038  0.000    0.542    0.842
+33  a3  ~~  a3   0.490 0.100  4.923  0.000    0.295    0.685
+34  b1  ~~  b1   0.594 0.102  5.819  0.000    0.394    0.794
+35  b2  ~~  b2   0.820 0.073 11.292  0.000    0.678    0.962
+36  b3  ~~  b3   0.530 0.117  4.530  0.000    0.301    0.759
+37  F1  ~~  F1   1.000 0.000     NA     NA    1.000    1.000
+38  F2  ~~  F2   1.000 0.000     NA     NA    1.000    1.000
+39  F1  ~~  F2   0.487 0.098  4.964  0.000    0.295    0.679
+40  a1 ~*~  a1   1.000 0.000     NA     NA    1.000    1.000
+41  a2 ~*~  a2   1.000 0.000     NA     NA    1.000    1.000
+42  a3 ~*~  a3   1.000 0.000     NA     NA    1.000    1.000
+43  b1 ~*~  b1   1.000 0.000     NA     NA    1.000    1.000
+44  b2 ~*~  b2   1.000 0.000     NA     NA    1.000    1.000
+45  b3 ~*~  b3   1.000 0.000     NA     NA    1.000    1.000
+46  a1  ~1       0.000 0.000     NA     NA    0.000    0.000
+47  a2  ~1       0.000 0.000     NA     NA    0.000    0.000
+48  a3  ~1       0.000 0.000     NA     NA    0.000    0.000
+49  b1  ~1       0.000 0.000     NA     NA    0.000    0.000
+50  b2  ~1       0.000 0.000     NA     NA    0.000    0.000
+51  b3  ~1       0.000 0.000     NA     NA    0.000    0.000
+52  F1  ~1       0.000 0.000     NA     NA    0.000    0.000
+53  F2  ~1       0.000 0.000     NA     NA    0.000    0.000
+
+rows with op == '=~' (loadings):
+  lhs op rhs est.std
+1  F1 =~  a1   0.768
+2  F1 =~  a2   0.555
+3  F1 =~  a3   0.714
+4  F2 =~  b1   0.637
+5  F2 =~  b2   0.424
+6  F2 =~  b3   0.686
+
+rows with op == '~~' and lhs != rhs (factor correlations):
+   lhs op rhs est.std
+39  F1 ~~  F2   0.487
+
+==========================================================================================
+probe finished
+==========================================================================================
