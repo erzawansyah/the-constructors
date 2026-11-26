@@ -20,6 +20,8 @@ The service runs as a separate process from the main Next.js application and com
 - **Config_Loader**: Component that reads psychometric procedure configuration from YAML files
 - **Test_Runner**: Component that executes test suites with numeric assertions
 - **Fixture**: Known test data with documented expected outputs for verification
+- **Fit_Variant**: The response field `fit_variant` stating which lavaan fit-index variant populated `fit_indices`: `"scaled_robust"` when `ordinal` is true, `"standard"` when `ordinal` is false
+- **Validation_Error**: An HTTP 400 error response (error response schema, including `request_id`) returned when a request value is rejected before any statistical computation runs
 
 ## Requirements
 
@@ -47,6 +49,7 @@ The service runs as a separate process from the main Next.js application and com
 2. THE R_Service SHALL validate that all required config fields are present before executing statistical computations
 3. THE R_Service SHALL NOT use hardcoded default values for any psychometric threshold parameters
 4. WHEN configuration validation fails, THE R_Service SHALL log the validation error with the full request context
+5. WHEN config.uva_method is null, THE R_Service SHALL return HTTP 400 with the message "config.uva_method is null; owner decision required" and SHALL NOT substitute a default value for config.uva_method
 
 ### Requirement 3: EGA Endpoint - Structural Screening
 
@@ -57,7 +60,7 @@ The service runs as a separate process from the main Next.js application and com
 1. THE R_Service SHALL expose a `/ega` endpoint that accepts POST requests with JSON payload containing embeddings matrix, item IDs, intended dimensions, and configuration parameters
 2. IF config.wto_threshold, config.uva_method, config.bootstrap_type, config.network_method, config.community_algorithm, config.stability_threshold, config.boot_iterations, or config.random_seed is null, THEN THE R_Service SHALL return HTTP 400 with error message "config.<field_name> is null; owner decision required"
 3. WHEN the `/ega` endpoint receives a valid request, THE R_Service SHALL transpose the embeddings matrix so that embedding dimensions become observations and items become variables, following the AI-GENIE methodology
-4. WHEN the transposed embeddings are prepared, THE R_Service SHALL execute UVA (Unique Variable Analysis) with the weighted topological overlap threshold from config.wto_threshold
+4. WHEN the transposed embeddings are prepared, THE R_Service SHALL execute UVA (Unique Variable Analysis) with the weighted topological overlap threshold from config.wto_threshold and the UVA method from config.uva_method (only "mbr" is accepted, see Requirement 9), using reduce.method "remove" and auto TRUE
 5. WHEN UVA identifies redundant items, THE R_Service SHALL repeat UVA on the retained item set until no redundant items remain
 6. THE R_Service SHALL include all removed item IDs in the response under `uva.removed_items` with reason "weighted topological overlap >= <threshold>"
 7. WHEN UVA completes with no further redundant items, THE R_Service SHALL execute bootEGA on retained items using config.stability_threshold, config.boot_iterations, config.network_method, config.community_algorithm, and config.random_seed
@@ -67,6 +70,13 @@ The service runs as a separate process from the main Next.js application and com
 11. THE R_Service SHALL compute Normalized Mutual Information (NMI) between the intended dimension assignment and the initial detected structure, returning the value as `nmi.initial`
 12. THE R_Service SHALL compute NMI between the intended dimension assignment and the final retained structure, returning the value as `nmi.final`
 13. THE R_Service SHALL return HTTP 200 with JSON response containing UVA results, bootEGA results, retained item IDs, and NMI scores
+14. THE R_Service SHALL include in the response, for every item removed by UVA, an entry in `uva.removed_wto_scores` of the form `{"redundant_with": <item_id>, "wto": <number>}`
+15. WHEN computing an entry of `uva.removed_wto_scores`, THE R_Service SHALL read the removed item's redundant partners from the UVA `$redundant` result and the wTO values of those pairs from `$wto$pairwise`, because EGAnet provides no per-item wTO score
+16. WHEN a removed item is redundant with more than one item, THE R_Service SHALL report the partner with the highest wTO as `redundant_with` and that highest wTO value as `wto`
+17. THE R_Service SHALL include in the response, for every item removed by bootEGA, an entry in `bootega.removed_stability_scores` holding the stability of that item in the bootEGA pass that removed it
+18. THE R_Service SHALL call `set.seed(as.numeric(config.random_seed))` immediately before every `EGAnet::EGA` call, including the initial structure, the final structure, and any call inside a repeat loop, because `EGAnet::EGA` has no seed argument
+19. THE R_Service SHALL pass `as.numeric(config.random_seed)` (a double) as the seed argument of `EGAnet::bootEGA`, because bootEGA rejects integer seeds
+20. WHEN two `/ega` requests carry identical embeddings, item IDs, intended dimensions, and config values, THE R_Service SHALL return identical `uva`, `bootega`, `retained_items`, and `nmi` values
 
 ### Requirement 4: CFA Endpoint - Confirmatory Factor Analysis
 
@@ -78,11 +88,17 @@ The service runs as a separate process from the main Next.js application and com
 2. WHEN the `ordinal` flag is true, THE R_Service SHALL use the WLSMV estimator in lavaan CFA
 3. WHEN the `ordinal` flag is false, THE R_Service SHALL use the ML (Maximum Likelihood) estimator in lavaan CFA
 4. THE R_Service SHALL construct a lavaan model syntax from the factors and items specified in `model_specification.factors`
-5. WHEN CFA completes successfully, THE R_Service SHALL extract fit indices (chisq, df, pvalue, CFI, TLI, RMSEA with confidence interval, SRMR) and return them in the response
+5. WHEN CFA completes successfully, THE R_Service SHALL extract fit indices (chisq, df, pvalue, CFI, TLI, RMSEA with confidence interval, SRMR) and return them in the response using the variant rules in criteria 10 to 12
 6. THE R_Service SHALL extract standardized factor loadings for each item and return them organized by factor name
 7. WHEN the model includes multiple factors, THE R_Service SHALL extract factor correlations and return them as `factor_correlations`
 8. IF the lavaan model does not converge, THEN THE R_Service SHALL return HTTP 200 with status "warning" and include partial fit indices and lavaan warning messages
-9. WHEN CFA completes, THE R_Service SHALL return HTTP 200 with JSON response containing fit indices, loadings, factor correlations, and any warnings
+9. WHEN CFA completes, THE R_Service SHALL return HTTP 200 with JSON response containing `fit_variant`, fit indices, loadings, factor correlations, and any warnings
+10. WHEN the `ordinal` flag is true, THE R_Service SHALL populate the response keys `chisq`, `df`, and `pvalue` from the lavaan `chisq.scaled`, `df.scaled`, and `pvalue.scaled` values
+11. WHEN the `ordinal` flag is true, THE R_Service SHALL populate the response keys `cfi`, `tli`, `rmsea`, `rmsea_ci_lower`, and `rmsea_ci_upper` from the lavaan `cfi.robust`, `tli.robust`, `rmsea.robust`, `rmsea.ci.lower.robust`, and `rmsea.ci.upper.robust` values, and SHALL populate `srmr` from the unsuffixed lavaan `srmr` value
+12. WHEN the `ordinal` flag is false, THE R_Service SHALL populate all fit-index response keys from the unsuffixed lavaan values
+13. WHEN CFA completes successfully, THE R_Service SHALL return `fit_variant` with the value "scaled_robust" if the `ordinal` flag is true and "standard" if the `ordinal` flag is false
+14. WHEN a fit index is reported by lavaan as NA, THE R_Service SHALL return that value as JSON null
+15. THE R_Service SHALL return fit indices as technical-rehearsal (smoke test) output and SHALL apply no fit cut-off to them
 
 ### Requirement 5: Error Handling and Diagnostics
 
@@ -109,10 +125,13 @@ The service runs as a separate process from the main Next.js application and com
 4. WHEN testing the `/ega` endpoint, THE Test_Runner SHALL verify that `nmi.initial` and `nmi.final` are each within 0.001 of the values recorded in the fixture by the `generate_fixtures.R` run
 5. WHEN testing the `/cfa` endpoint with planted structure, THE Test_Runner SHALL verify that recovered factor loadings are within ±0.10 of planted values documented in the fixture
 6. WHEN testing the `/cfa` endpoint with planted structure, THE Test_Runner SHALL verify that the recovered factor correlation is within ±0.10 of the planted factor correlation documented in the fixture, and SHALL print CFI, RMSEA, and SRMR for reporting without asserting on them
-7. WHEN testing the `/cfa` endpoint with the HolzingerSwineford1939 reference model, THE Test_Runner SHALL verify that chisq, df, CFI, and RMSEA are identical to direct lavaan::cfa() output for the same model
+7. WHEN testing the `/cfa` endpoint with the HolzingerSwineford1939 reference model, THE Test_Runner SHALL verify that chisq, CFI, and RMSEA equal direct lavaan::cfa() output for the same model within an absolute tolerance of 1e-6, and that df equals the direct output within 0.5
 8. IF any numeric assertion fails, THEN THE Test_Runner SHALL report the expected value, actual value, and tolerance to stdout
 9. WHEN all tests pass, THE Test_Runner SHALL exit with code 0 and print "All tests passed"
 10. IF any test fails, THEN THE Test_Runner SHALL exit with code 1 and print the count of failed assertions
+11. WHEN testing the `/cfa` endpoint with the ordinal planted-structure fixture, THE Test_Runner SHALL assert only the factor loadings (±0.10), the factor correlation (±0.10), and that `fit_variant` equals "scaled_robust"
+12. WHEN testing the `/cfa` endpoint with the HolzingerSwineford1939 ML reference model, THE Test_Runner SHALL verify that `fit_variant` equals "standard"
+13. WHEN testing the `/ega` endpoint, THE Test_Runner SHALL verify that repeating the same request returns identical `uva.removed_items`, `bootega.removed_items`, `nmi.initial`, and `nmi.final` values
 
 ### Requirement 7: EGA Test Fixtures
 
@@ -147,7 +166,9 @@ The service runs as a separate process from the main Next.js application and com
 7. THE Fixture SHALL be saved as `r-service/tests/fixtures/cfa_input.json` and `cfa_expected.json`
 8. THE Fixture SHALL include documentation of the data generation code and random seed used for reproducibility
 9. THE Test_Runner SHALL include a reference test using the 3-factor HolzingerSwineford1939 dataset from lavaan
-10. WHEN testing with HolzingerSwineford1939, THE Test_Runner SHALL verify that the `/cfa` endpoint output is identical to direct lavaan::cfa() output for chisq, df, CFI, and RMSEA
+10. WHEN testing with HolzingerSwineford1939, THE Test_Runner SHALL verify that the `/cfa` endpoint output equals direct lavaan::cfa() output for chisq, CFI, and RMSEA within an absolute tolerance of 1e-6, and for df within 0.5
+11. WHEN testing with the ordinal planted-structure fixture, THE Test_Runner SHALL assert only loadings (±0.10), factor correlation (±0.10), and `fit_variant` equal to "scaled_robust"
+12. WHEN testing with HolzingerSwineford1939 (ML estimator), THE Test_Runner SHALL assert that `fit_variant` equals "standard"
 
 ### Requirement 9: Request Validation
 
@@ -162,6 +183,9 @@ The service runs as a separate process from the main Next.js application and com
 5. WHEN the `/cfa` endpoint receives a request, THE R_Service SHALL verify that `item_ids` length equals the number of columns in `responses`
 6. WHEN the `/cfa` endpoint receives a request, THE R_Service SHALL verify that all items in `model_specification.factors` are present in `item_ids`
 7. IF validation fails, THEN THE R_Service SHALL return HTTP 400 with a specific error message indicating which validation rule was violated
+8. IF the `/ega` endpoint receives a non-null config.uva_method whose case-insensitive value is not "mbr", THEN THE R_Service SHALL return a Validation_Error (HTTP 400) before executing any UVA computation
+9. IF config.uva_method is "ejp" (case-insensitive), THEN THE R_Service SHALL include in the Validation_Error message that UVA with "ejp", reduce.method "remove", and auto TRUE requires interactive input and would hang a non-interactive process
+10. WHEN config.uva_method is "mbr" in any letter case, THE R_Service SHALL accept the value
 
 ### Requirement 10: Logging for Traceability
 
@@ -170,9 +194,9 @@ The service runs as a separate process from the main Next.js application and com
 #### Acceptance Criteria
 
 1. WHEN the `/ega` endpoint processes a request, THE R_Service SHALL log to stdout: timestamp, endpoint, item count, config values (thresholds, iterations), and execution duration
-2. WHEN the `/cfa` endpoint processes a request, THE R_Service SHALL log to stdout: timestamp, endpoint, persona count, item count, estimator type, and execution duration
-3. WHEN UVA removes items, THE R_Service SHALL log the removed item IDs and their wTO scores
-4. WHEN bootEGA removes items, THE R_Service SHALL log the removed item IDs and their stability scores
+2. WHEN the `/cfa` endpoint processes a request, THE R_Service SHALL log to stdout: timestamp, endpoint, persona count, item count, estimator type, and execution duration, where the estimator type is the service's own choice ("WLSMV" when `ordinal` is true, "ML" when `ordinal` is false) and not the estimator name that lavaan reports internally ("DWLS")
+3. WHEN UVA removes items, THE R_Service SHALL log the removed item IDs and, for each, the `redundant_with` partner and `wto` score also returned in `uva.removed_wto_scores`
+4. WHEN bootEGA removes items, THE R_Service SHALL log the removed item IDs and, for each, the stability score also returned in `bootega.removed_stability_scores`
 5. IF an error occurs, THEN THE R_Service SHALL log the error message, request_id, and timestamp to stderr
 6. THE R_Service SHALL format all log entries as JSON for structured log parsing
 
@@ -201,3 +225,6 @@ The service runs as a separate process from the main Next.js application and com
 3. THE R_Service SHALL accept requests with Content-Type `application/json`
 4. THE R_Service SHALL enable CORS headers if the R_SERVICE_CORS environment variable is set to "true"
 5. THE R_Service SHALL document the expected format for Next.js client calls in a code comment or example file
+6. THE R_Service SHALL serialize every HTTP response and every JSON log line (Requirement 10.6) with jsonlite `toJSON` using `auto_unbox = TRUE`, `na = "null"`, and `digits = NA`, so that every numeric NA value is serialized as JSON null and not as the string "NA", and every number is serialized at full numeric precision without the default rounding to 4 digits, making numbers in logs equal numbers in responses
+7. THE R_Service SHALL include `fit_variant` ("scaled_robust" or "standard") in every successful `/cfa` response as part of the contract in `.kiro/steering/03-statistics-contract.md`
+8. THE R_Service SHALL include `uva.removed_wto_scores` and `bootega.removed_stability_scores` in every successful `/ega` response as part of the contract in `.kiro/steering/03-statistics-contract.md`

@@ -13,8 +13,12 @@ The service supports the structural screening agent (FR-STRUCT) and the simulati
 
 - Every psychometric threshold and procedure parameter arrives in the request `config`, loaded by the client from `app-config/psychometric-procedure.yaml`. The service has no defaults for them.
 - A null or missing config value is rejected with HTTP 400 and an actionable message.
+- `config.uva_method` accepts only `"mbr"` (case-insensitive). `"ejp"` and any other value are rejected with a `validation_error` before any UVA computation, because UVA with `"ejp"`, `reduce.method = "remove"` and `auto = TRUE` waits for keyboard input and would hang the process.
 - Embeddings are transposed before EGA so that items become variables (AI-GENIE).
-- Wrapper argument names and result field names follow the output of `r-service/probe.R`, not memory.
+- Every `EGAnet::EGA` call is preceded by `set.seed(as.numeric(config$random_seed))`, because `EGA` has no seed argument. `bootEGA` receives `seed = as.numeric(config$random_seed)`, because it rejects integer seeds and `jsonlite::fromJSON` returns whole numbers as integer.
+- For `ordinal = true` (WLSMV) the reported fit indices are the lavaan scaled/robust variants, and the response states this in `fit_variant`.
+- Responses are serialized with `jsonlite::toJSON(auto_unbox = TRUE, na = "null", digits = NA)`, so `NA` becomes JSON `null`, never the string `"NA"`, and numbers keep full precision (no default 4-digit rounding).
+- Wrapper argument names and result field names follow the output of `r-service/probe.R`, recorded in `r-service/PROBE_NOTES.md`, not memory.
 - Tests check numbers against planted structure or a lavaan reference, not just exit codes.
 
 ## Architecture
@@ -42,6 +46,7 @@ Start command: `Rscript r-service/api.R`.
 r-service/
 ├── api.R
 ├── probe.R
+├── PROBE_NOTES.md
 ├── config/
 │   └── loader.R
 ├── validation/
@@ -75,30 +80,31 @@ r-service/
 └── README.md
 ```
 
-| File                             | Responsibility                                                                                                                      |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `api.R`                          | Load packages (exit 1 listing missing ones), source modules, define routes, CORS, bind host/port                                    |
-| `probe.R`                        | Development probe: print package versions and `str()` of EGAnet/lavaan results                                                      |
-| `config/loader.R`                | `validate_config()`: reject missing or null config fields                                                                           |
-| `validation/request_validator.R` | `validate_ega_request()`, `validate_cfa_request()`: schema and dimension checks                                                     |
-| `ega/pipeline.R`                 | `execute_ega_pipeline()`: orchestrates transpose → UVA → bootEGA → NMI → response                                                   |
-| `ega/uva.R`                      | `run_uva_loop()`: repeated `EGAnet::UVA` until no redundant items                                                                   |
-| `ega/bootega.R`                  | `run_bootega_loop()`: repeated `EGAnet::bootEGA` + `itemStability` until all items stable                                           |
-| `ega/nmi.R`                      | `compute_nmi()`: NMI via `igraph::compare(method = "nmi")`, NA handling                                                             |
-| `cfa/pipeline.R`                 | `execute_cfa_pipeline()`: orchestrates syntax → fit → extraction → response                                                         |
-| `cfa/model_builder.R`            | `build_lavaan_model()`: lavaan syntax from `model_specification.factors`                                                            |
-| `cfa/estimator.R`                | `run_cfa()`: `lavaan::cfa` with WLSMV or ML, warning capture, convergence check                                                     |
-| `cfa/extractor.R`                | Fit indices, standardized loadings, factor correlations                                                                             |
-| `logging/logger.R`               | JSON-line logging to stdout (normal) and stderr (errors)                                                                            |
-| `tests/run_all.R`                | Run all test files, print summary, exit 0 / 1                                                                                       |
-| `tests/helpers.R`                | `assert_true`, `assert_near`, `assert_in_range`, `assert_set_equal`, `assert_equal`                                                 |
-| `tests/test_ega.R`               | EGA fixture test                                                                                                                    |
-| `tests/test_cfa.R`               | CFA planted-loading fixture test                                                                                                    |
-| `tests/test_holzinger.R`         | HolzingerSwineford1939 reference test against direct `lavaan::cfa()`                                                                |
-| `tests/test_errors.R`            | Validation and error-path tests (400/500, request_id)                                                                               |
-| `tests/test_properties.R`        | Property-based tests for three pure functions (`compute_nmi`, `validate_config`, `build_lavaan_model`), via `testthat` + `hedgehog` |
-| `tests/generate_fixtures.R`      | Generate fixture inputs and record expected outputs                                                                                 |
-| `README.md`                      | Packages with minimum versions, install, start, env vars, tests, curl health check, layout                                          |
+| File                             | Responsibility                                                                                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `api.R`                          | Load packages (exit 1 listing missing ones), source modules, define routes, JSON serializer (`na = "null"`, `digits = NA`), CORS, bind host/port |
+| `probe.R`                        | Development probe: print package versions and `str()` of EGAnet/lavaan results                                                                   |
+| `PROBE_NOTES.md`                 | Recorded probe findings (argument names, result paths, differences from the design); wrappers follow this file                                   |
+| `config/loader.R`                | `validate_config()`: reject missing or null config fields, and any `uva_method` other than `"mbr"`                                               |
+| `validation/request_validator.R` | `validate_ega_request()`, `validate_cfa_request()`: schema and dimension checks                                                                  |
+| `ega/pipeline.R`                 | `execute_ega_pipeline()`: orchestrates transpose → UVA → bootEGA → NMI → response; `run_ega()`: the only caller of `EGAnet::EGA`                 |
+| `ega/uva.R`                      | `run_uva_loop()`: repeated `EGAnet::UVA` until no redundant items; derives `removed_wto_scores`                                                  |
+| `ega/bootega.R`                  | `run_bootega_loop()`: repeated `EGAnet::bootEGA` + `itemStability` until all items stable                                                        |
+| `ega/nmi.R`                      | `compute_nmi()`: NMI via `igraph::compare(method = "nmi")`, NA handling                                                                          |
+| `cfa/pipeline.R`                 | `execute_cfa_pipeline()`: orchestrates syntax → fit → extraction → response (including `fit_variant`)                                            |
+| `cfa/model_builder.R`            | `build_lavaan_model()`: lavaan syntax from `model_specification.factors`                                                                         |
+| `cfa/estimator.R`                | `run_cfa()`: `lavaan::cfa` with WLSMV or ML, warning capture, convergence check, estimator label                                                 |
+| `cfa/extractor.R`                | Fit indices (scaled/robust or standard variant), standardized loadings, factor correlations                                                      |
+| `logging/logger.R`               | JSON-line logging to stdout (normal) and stderr (errors)                                                                                         |
+| `tests/run_all.R`                | Run all test files, print summary, exit 0 / 1                                                                                                    |
+| `tests/helpers.R`                | `assert_true`, `assert_near`, `assert_in_range`, `assert_set_equal`, `assert_equal`                                                              |
+| `tests/test_ega.R`               | EGA fixture test, including repeat-request reproducibility                                                                                       |
+| `tests/test_cfa.R`               | CFA planted-loading fixture test (loadings, factor correlation, `fit_variant`)                                                                   |
+| `tests/test_holzinger.R`         | HolzingerSwineford1939 reference test against direct `lavaan::cfa()`, plus `fit_variant == "standard"`                                           |
+| `tests/test_errors.R`            | Validation and error-path tests (400/500, request_id)                                                                                            |
+| `tests/test_properties.R`        | Property-based tests for three pure functions (`compute_nmi`, `validate_config`, `build_lavaan_model`), via `testthat` + `hedgehog`              |
+| `tests/generate_fixtures.R`      | Generate fixture inputs and record expected outputs                                                                                              |
+| `README.md`                      | Packages with minimum versions, install, start, env vars, tests, curl health check, layout                                                       |
 
 ## Components and Interfaces
 
@@ -107,7 +113,7 @@ r-service/
 1. Check required packages: plumber, EGAnet, lavaan, igraph, jsonlite, uuid. If any is missing, write the list to stderr and exit with code 1.
 2. Source `config/`, `validation/`, `ega/`, `cfa/`, `logging/`.
 3. Read `R_SERVICE_HOST` and `R_SERVICE_PORT` (defaults above).
-4. Define routes `GET /health`, `POST /ega`, `POST /cfa`, all with the JSON serializer (`Content-Type: application/json`).
+4. Define routes `GET /health`, `POST /ega`, `POST /cfa`, all with `plumber::serializer_json(auto_unbox = TRUE, na = "null", digits = NA)` (`Content-Type: application/json`). Numeric `NA` values are serialized as JSON `null`, never as the string `"NA"` (the jsonlite default). `digits = NA` prevents the jsonlite default rounding to 4 digits.
 5. If `R_SERVICE_CORS == "true"`, add CORS headers via a filter.
 6. Run the plumber router on host and port.
 
@@ -121,8 +127,9 @@ Both POST handlers take `(req, res)`, generate a UUID `request_id`, record the s
 
 ```r
 validate_ega_request(body)                     # throws validation_error
-validate_config(config, required_fields)       # throws validation_error
+validate_config(config, required_fields)       # throws validation_error (null, missing, or uva_method != "mbr")
 execute_ega_pipeline(body)                     # -> response list
+run_ega(data, config)                          # set.seed(as.numeric(random_seed)) + EGAnet::EGA; the only EGA caller
 run_uva_loop(data, config)                     # -> removed_items, removed_wto_scores, retained_data
 run_bootega_loop(data, config)                 # -> removed_items, removed_stability_scores, retained_data, stability_per_item
 compute_nmi(detected, intended)                # -> numeric
@@ -131,14 +138,19 @@ log_ega_execution(body, result, request_id, duration_ms)
 
 1. **Parse JSON.** `jsonlite::fromJSON(req$postBody)`. A parse failure is re-thrown as a `validation_error` with message `"Invalid JSON: <parser message>"`.
 2. **Validate request.** `validate_ega_request()` checks required fields (`embeddings`, `item_ids`, `intended_dimensions`, `config`), that `embeddings` is a numeric matrix with at least 2 rows (a list of rows is bound with `rbind`), and that `item_ids` and `intended_dimensions` lengths equal the embeddings row count.
-3. **Validate config.** `validate_config()` requires all eight fields: `wto_threshold`, `stability_threshold`, `boot_iterations`, `network_method`, `community_algorithm`, `random_seed`, `uva_method`, `bootstrap_type`. Missing → `"config.<field> is missing"`; null → `"config.<field> is null; owner decision required"`.
+3. **Validate config.** `validate_config()` requires all eight fields: `wto_threshold`, `stability_threshold`, `boot_iterations`, `network_method`, `community_algorithm`, `random_seed`, `uva_method`, `bootstrap_type`. Missing → `"config.<field> is missing"`; null → `"config.<field> is null; owner decision required"`. After all eight fields pass the null/missing check, `uva_method` is checked: `tolower(uva_method) == "mbr"` is accepted in any letter case; any other value throws a `validation_error` (HTTP 400) before any UVA computation. For `"ejp"` (case-insensitive) the message explains that UVA with `"ejp"`, `reduce.method = "remove"` and `auto = TRUE` requires interactive input and would hang a non-interactive process. The check is by condition class and value, never by matching message text.
 4. **Transpose.** `t(embeddings)` so rows are embedding dimensions (observations) and columns are items (variables), per AI-GENIE. Column names are set to `item_ids`.
-5. **Initial NMI.** Run `EGAnet::EGA` on the full transposed matrix with `model` and `algorithm` from config. Compute `nmi.initial` from its community membership (`wc`) against `intended_dimensions + 1` (the request is 0-indexed, NMI comparison uses 1-indexed labels).
-6. **UVA loop.** Call `EGAnet::UVA` with `cut.off` and `uva.method` from config, plus `reduce = TRUE`, `reduce.method = "remove"`, `auto = TRUE`, `verbose = FALSE`. Items present before but absent from the reduced data are added to `removed_items`, with their wTO score recorded. Repeat on the reduced data until a pass removes nothing.
-7. **bootEGA loop.** Call `EGAnet::bootEGA` on the UVA-retained data with `model`, `algorithm`, `iter`, `type`, `seed` from config and `verbose = FALSE`. Obtain per-item stability through `EGAnet::itemStability` (exact call and result field path as shown by `probe.R`). Remove every item with stability below `stability_threshold`, record its score, and repeat until all remaining items are stable. The last pass's scores become `stability_per_item`.
-8. **Final NMI.** Run `EGAnet::EGA` on the retained data and compute `nmi.final` against `intended_dimensions` subset to the retained items (matched by item ID), again `+ 1`.
+5. **Initial NMI.** Call `run_ega()` on the full transposed matrix. `run_ega()` calls `set.seed(as.numeric(config$random_seed))` immediately before `EGAnet::EGA(..., model, algorithm, plot.EGA = FALSE, verbose = FALSE)`, with `model` and `algorithm` from config. `EGA` has no seed argument, so this is the only seeding available. Compute `nmi.initial` from `ega$wc` (named double, class `EGA.community`, passed to `igraph::compare` as is) against `intended_dimensions + 1` (the request is 0-indexed, NMI comparison uses 1-indexed labels).
+6. **UVA loop.** Call `EGAnet::UVA` with `cut.off` and `uva.method` from config, plus the fixed arguments `reduce = TRUE`, `reduce.method = "remove"`, `auto = TRUE`, `verbose = FALSE`. `auto = TRUE` is required: `auto = FALSE` prompts interactively. For each pass:
+   - If `result$reduced_data` is `NULL` (nothing redundant), stop the loop and treat all items of that pass's input as retained. Without this guard `colnames(NULL)` would make `setdiff()` return every item.
+   - Otherwise `removed_this_pass <- setdiff(colnames(data), colnames(result$reduced_data))`. `result$keep_remove` is never read, because the probe showed it is inconsistent with `reduced_data`.
+   - Pass `result$reduced_data` (a matrix with item IDs as `colnames`) to the next pass, so column names stay intact.
+   - Repeat until a pass removes nothing.
+   - **`removed_wto_scores`.** EGAnet has no per-item wTO score, so the value is derived from the same pass's result. For each removed item `r`: its partners are the entries of `result$redundant[[r]]` (named list: name = target item, value = character vector of items redundant with it) together with the names of any entries whose vector contains `r`. From `result$wto$pairwise` (columns `node_i`, `node_j`, `wto`) take the rows pairing `r` with one of its partners. Not all pairs are present in `$wto$pairwise`, so partners without a row are skipped. The partner with the highest `wto` becomes `redundant_with`, and that value becomes `wto`. If no partner has a row, `redundant_with` and `wto` are `null` and a warning is logged. A pass can remove an item whose partners were removed in the same pass, so the lookup uses that pass's `$redundant` and `$wto$pairwise` (computed on that pass's input), not the final retained set. Each entry is stored as `{ "redundant_with": <item_id>, "wto": <number> }`.
+7. **bootEGA loop.** Call `EGAnet::bootEGA` on the UVA-retained data with `model`, `algorithm`, `iter`, `type` from config, `seed = as.numeric(config$random_seed)` (a double, because `bootEGA` rejects integer seeds), and the fixed arguments `ncores = 1`, `plot.itemStability = FALSE`, `verbose = FALSE`. Obtain per-item stability with `itemStability(boot, IS.plot = FALSE)$item.stability$empirical.dimensions` (a named numeric vector, names = item IDs; see `PROBE_NOTES.md` 3.5). Only this vector is kept: the `plot` element (a large ggplot object) is never stored, logged or serialized. Remove every item with stability below `stability_threshold`, record its score in `removed_stability_scores` (the stability in the pass that removed it), and repeat until all remaining items are stable. The last pass's scores become `stability_per_item`.
+8. **Final NMI.** Call `run_ega()` on the retained data (again seeded immediately before the `EGA` call) and compute `nmi.final` against `intended_dimensions` subset to the retained items (matched by item ID), again `+ 1`.
 9. **NA handling in NMI.** `compute_nmi()` requires equal-length vectors, drops positions where either `detected` (`wc`) or `intended` is NA, warns with the count dropped, errors if nothing remains, then calls `igraph::compare(detected, intended, method = "nmi")`.
-10. **Response.** Build the success response (see Data Models). `uva.reason` is `"weighted topological overlap >= <wto_threshold>"`; `bootega.reason` is `"stability < <stability_threshold> over <boot_iterations> iterations"`. Both values are interpolated from the request config. Log and return HTTP 200.
+10. **Response.** Build the success response (see Data Models), including `uva.removed_wto_scores` and `bootega.removed_stability_scores`. `uva.reason` is `"weighted topological overlap >= <wto_threshold>"`; `bootega.reason` is `"stability < <stability_threshold> over <boot_iterations> iterations"`. Both values are interpolated from the request config. Log and return HTTP 200. Two requests with identical embeddings, item IDs, intended dimensions and config return identical `uva`, `bootega`, `retained_items` and `nmi` values.
 
 ### `/cfa` flow
 
@@ -146,8 +158,8 @@ log_ega_execution(body, result, request_id, duration_ms)
 validate_cfa_request(body)                              # throws validation_error
 execute_cfa_pipeline(body)                              # -> response list
 build_lavaan_model(model_specification)                 # -> character syntax
-run_cfa(model_syntax, response_df, item_ids, ordinal)   # -> fit, converged, warnings
-extract_fit_indices(fit)                                # -> named list
+run_cfa(model_syntax, response_df, item_ids, ordinal)   # -> fit, converged, warnings, estimator ("WLSMV" | "ML")
+extract_fit_indices(fit, ordinal)                       # -> named list (scaled/robust or standard variant)
 extract_loadings(fit, model_specification)              # -> nested list
 extract_factor_correlations(fit, model_specification)   # -> named list
 log_cfa_execution(body, result, request_id, duration_ms)
@@ -162,28 +174,52 @@ log_cfa_execution(body, result, request_id, duration_ms)
    - `ordinal = false` → `lavaan::cfa(..., estimator = "ML")`.
    - Warnings are captured with `withCallingHandlers` and muffled into a list.
    - Convergence is read with `lavaan::lavInspect(fit, "converged")`.
-6. **Fit indices.** `lavaan::fitMeasures(fit, c("chisq", "df", "pvalue", "cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "srmr"))`, returned `unname()`d with `rmsea.ci.*` renamed to `rmsea_ci_lower` / `rmsea_ci_upper`.
+   - `run_cfa()` returns the estimator label `"WLSMV"` or `"ML"` from its own choice. `lavInspect(fit, "options")$estimator` is not used for this, because it reports `"DWLS"` for a WLSMV fit.
+6. **Fit indices.** `lavaan::fitMeasures()` is called with the variant-specific names below, each result `unname()`d and stored under the fixed response key. The variant is chosen by the `ordinal` flag and returned as `fit_variant`.
+
+   | Response key     | `ordinal = true` (`fit_variant = "scaled_robust"`) | `ordinal = false` (`fit_variant = "standard"`) |
+   | ---------------- | -------------------------------------------------- | ---------------------------------------------- |
+   | `chisq`          | `chisq.scaled`                                     | `chisq`                                        |
+   | `df`             | `df.scaled`                                        | `df`                                           |
+   | `pvalue`         | `pvalue.scaled`                                    | `pvalue`                                       |
+   | `cfi`            | `cfi.robust`                                       | `cfi`                                          |
+   | `tli`            | `tli.robust`                                       | `tli`                                          |
+   | `rmsea`          | `rmsea.robust`                                     | `rmsea`                                        |
+   | `rmsea_ci_lower` | `rmsea.ci.lower.robust`                            | `rmsea.ci.lower`                               |
+   | `rmsea_ci_upper` | `rmsea.ci.upper.robust`                            | `rmsea.ci.upper`                               |
+   | `srmr`           | `srmr` (unchanged)                                 | `srmr`                                         |
+
+   For WLSMV the unsuffixed lavaan names are the unscaled statistics and `pvalue` is `NA`, which is why the scaled/robust names are used. Any value lavaan reports as `NA` is returned as JSON `null` (serializer `na = "null"`). These indices are technical-rehearsal (smoke test) output. No fit cut-off is applied to them.
+
 7. **Loadings.** `lavaan::standardizedSolution(fit)` rows with `op == "=~"`, organized as `loadings[factor][item] = est.std`.
 8. **Factor correlations.** Rows with `op == "~~"`, `lhs != rhs`, and both sides factor names. Keys are `"<lhs>_<rhs>"`. Empty object for single-factor models.
 9. **Non-convergence.** Return HTTP 200 with `status: "warning"`, `message: "Model did not converge"`, `partial_fit_indices` (empty object if extraction fails) and `lavaan_warnings`.
-10. **Success.** Return HTTP 200 with fit indices, loadings, factor correlations and captured warnings.
+10. **Success.** Return HTTP 200 with `fit_variant`, fit indices, loadings, factor correlations and captured warnings.
 
 ### Config field → package argument mapping
 
 Every value below is read from the request `config`. There are no defaults in the service; a null or missing value returns HTTP 400 before any computation.
 
-| Config field          | Used as                                                            | Notes                                                           |
-| --------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------- |
-| `wto_threshold`       | `EGAnet::UVA(cut.off = ...)`                                       | Read from config                                                |
-| `uva_method`          | `EGAnet::UVA(uva.method = ...)`                                    | Read from config                                                |
-| `network_method`      | `EGAnet::EGA(model = ...)`, `EGAnet::bootEGA(model = ...)`         | Read from config                                                |
-| `community_algorithm` | `EGAnet::EGA(algorithm = ...)`, `EGAnet::bootEGA(algorithm = ...)` | Read from config                                                |
-| `boot_iterations`     | `EGAnet::bootEGA(iter = ...)`                                      | Read from config                                                |
-| `bootstrap_type`      | `EGAnet::bootEGA(type = ...)`                                      | AI-GENIE uses `"resampling"`; the value still comes from config |
-| `random_seed`         | `EGAnet::bootEGA(seed = ...)`, and EGA seeding where supported     | Read from config                                                |
-| `stability_threshold` | Compared against `itemStability` per-item output                   | Item removed if stability < threshold                           |
+| Config field          | Used as                                                                                                | Notes                                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wto_threshold`       | `EGAnet::UVA(cut.off = ...)`                                                                           | Read from config                                                                                                                                                          |
+| `uva_method`          | `EGAnet::UVA(uva.method = ...)`                                                                        | Read from config; only `"mbr"` (case-insensitive) is accepted. Any other value, including `"ejp"`, is a `validation_error` (HTTP 400). Stays null until the owner sets it |
+| `network_method`      | `EGAnet::EGA(model = ...)`, `EGAnet::bootEGA(model = ...)`                                             | Read from config                                                                                                                                                          |
+| `community_algorithm` | `EGAnet::EGA(algorithm = ...)`, `EGAnet::bootEGA(algorithm = ...)`                                     | Read from config                                                                                                                                                          |
+| `boot_iterations`     | `EGAnet::bootEGA(iter = ...)`                                                                          | Read from config                                                                                                                                                          |
+| `bootstrap_type`      | `EGAnet::bootEGA(type = ...)`                                                                          | AI-GENIE uses `"resampling"`; the value still comes from config                                                                                                           |
+| `random_seed`         | `EGAnet::bootEGA(seed = as.numeric(...))`; `set.seed(as.numeric(...))` before every `EGAnet::EGA` call | Read from config. `EGA` has no seed argument. `bootEGA` rejects integer seeds and `fromJSON` returns whole numbers as integer, so `as.numeric()` is required              |
+| `stability_threshold` | Compared against `itemStability` per-item output                                                       | Item removed if stability < threshold                                                                                                                                     |
 
-Fixed (non-psychometric) arguments: `UVA(reduce = TRUE, reduce.method = "remove", auto = TRUE)`, `std.lv = TRUE` in lavaan, `verbose = FALSE`.
+Fixed (non-psychometric) arguments:
+
+- `UVA(reduce = TRUE, reduce.method = "remove", auto = TRUE, verbose = FALSE)`. `auto = FALSE` prompts interactively and is never used.
+- `EGA(plot.EGA = FALSE, verbose = FALSE)`.
+- `bootEGA(ncores = 1, plot.itemStability = FALSE, verbose = FALSE)`.
+- `itemStability(IS.plot = FALSE)`.
+- `std.lv = TRUE` in lavaan.
+
+Fixed lavaan fit-index names per `ordinal` value are listed in the `/cfa` flow, step 6.
 
 ### Development probe (`probe.R`)
 
@@ -203,6 +239,14 @@ Rules:
 
 The probe's sample parameter values are probe-only and are never used by the service.
 
+Probe findings are recorded in `r-service/PROBE_NOTES.md` (versions, argument names, result paths, and the differences from this design). The wrappers follow that file. Run the probe from the repo root with stdin closed, so that an unexpected interactive UVA prompt cannot block it:
+
+```bash
+Rscript r-service/probe.R < /dev/null > r-service/probe_output.txt 2>&1
+```
+
+After any EGAnet or lavaan upgrade, rerun the probe and update `PROBE_NOTES.md`.
+
 ### Logging (`logging/logger.R`)
 
 ```r
@@ -211,11 +255,12 @@ log_cfa_execution(body, result, request_id, duration_ms)
 log_error(endpoint, error, request_body, request_id)
 ```
 
-- One JSON object per line (`jsonlite::toJSON(auto_unbox = TRUE)`).
+- One JSON object per line (`jsonlite::toJSON(auto_unbox = TRUE, na = "null", digits = NA)`). This is the same serialization as the HTTP responses, so numbers in logs equal numbers in responses (no 4-digit rounding, `NA` as `null`).
 - stdout for successful operations, stderr for errors.
 - Common fields: `timestamp` (ISO 8601), `request_id`, `endpoint`, `execution_duration_ms`.
-- `/ega`: `item_count`, all eight config values, `removed_uva_items` with `removed_uva_wto_scores`, `removed_bootega_items` with `removed_bootega_stability_scores`, `retained_count`, `nmi_initial`, `nmi_final`.
-- `/cfa`: `persona_count`, `item_count`, `estimator` (`WLSMV` or `ML`), `factor_count`, `cfi`, `rmsea`.
+- `/ega`: `item_count`, all eight config values, `removed_uva_items` and, for each, its `redundant_with` partner and `wto` score (the same entries as `uva.removed_wto_scores`), `removed_bootega_items` and, for each, its stability score (the same entries as `bootega.removed_stability_scores`), `retained_count`, `nmi_initial`, `nmi_final`.
+- `/cfa`: `persona_count`, `item_count`, `estimator`, `fit_variant`, `factor_count`, `cfi`, `rmsea`. `estimator` is `"WLSMV"` when `ordinal` is true and `"ML"` when false, taken from the wrapper's own choice in `run_cfa()`, not from `lavInspect(fit, "options")$estimator`, which reports `"DWLS"`.
+- Validation errors (including a rejected `uva_method`) are logged with the full request context, minus the `embeddings` / `responses` matrices.
 - Errors: `level: "error"`, `request_id`, `endpoint`, `error_message`, and request context with `embeddings` / `responses` matrices excluded.
 
 ## Data Models
@@ -261,22 +306,30 @@ All schemas match `.kiro/steering/03-statistics-contract.md`.
 {
   "status": "success",
   "uva": {
-    "removed_items": ["item_003"],
-    "removed_wto_scores": { "item_003": "<number>" },
-    "reason": "weighted topological overlap >= <wto_threshold>"
+    "removed_items": ["item_003", "item_007"],
+    "removed_wto_scores": {
+      "item_003": { "redundant_with": "item_004", "wto": 0.31 },
+      "item_007": { "redundant_with": "item_008", "wto": 0.27 }
+    },
+    "reason": "weighted topological overlap >= 0.25"
   },
   "bootega": {
-    "removed_items": ["item_010"],
-    "removed_stability_scores": { "item_010": "<number>" },
-    "reason": "stability < <stability_threshold> over <boot_iterations> iterations",
-    "stability_per_item": { "item_001": "<number>" }
+    "removed_items": ["item_012"],
+    "removed_stability_scores": { "item_012": 0.61 },
+    "reason": "stability < 0.75 over 500 iterations",
+    "stability_per_item": { "item_001": 0.92, "item_002": 0.88 }
   },
-  "retained_items": ["item_001", "item_002"],
-  "nmi": { "initial": "<number>", "final": "<number>" }
+  "retained_items": ["item_001", "item_002", "item_004"],
+  "nmi": { "initial": 0.68, "final": 0.84 }
 }
 ```
 
-`removed_wto_scores` and `removed_stability_scores` are additive to the steering contract and exist for traceability logging.
+All numbers and the threshold text in `reason` are illustrative, not thresholds; the real `reason` strings interpolate the request config.
+
+- `uva.removed_wto_scores`: one entry per removed item, `{ "redundant_with": <item_id>, "wto": <number> }`. The service derives it as described in the `/ega` flow, step 6: the removed item's partners come from `$redundant`, the wTO values from `$wto$pairwise`, and the partner with the highest wTO is reported.
+- `bootega.removed_stability_scores`: stability of each removed item in the pass that removed it.
+- `removed_wto_scores` and `removed_stability_scores` are part of the steering contract and are used for traceability logging.
+- Numeric values that R reports as `NA` are serialized as JSON `null`.
 
 ### `POST /cfa` request
 
@@ -301,22 +354,31 @@ All schemas match `.kiro/steering/03-statistics-contract.md`.
 ```json
 {
   "status": "success",
+  "fit_variant": "scaled_robust",
   "fit_indices": {
-    "chisq": 0,
-    "df": 0,
-    "pvalue": 0,
-    "cfi": 0,
-    "tli": 0,
-    "rmsea": 0,
-    "rmsea_ci_lower": 0,
-    "rmsea_ci_upper": 0,
-    "srmr": 0
+    "chisq": 42.3,
+    "df": 24,
+    "pvalue": 0.012,
+    "cfi": 0.976,
+    "tli": 0.968,
+    "rmsea": 0.048,
+    "rmsea_ci_lower": 0.021,
+    "rmsea_ci_upper": 0.072,
+    "srmr": 0.035
   },
-  "loadings": { "AnticDread": { "item_001": 0, "item_002": 0 } },
-  "factor_correlations": { "AnticDread_WorkRumination": 0 },
+  "loadings": {
+    "AnticDread": { "item_001": 0.78, "item_002": 0.82, "item_003": 0.71 },
+    "WorkRumination": { "item_004": 0.85, "item_005": 0.79, "item_006": 0.73 }
+  },
+  "factor_correlations": { "AnticDread_WorkRumination": 0.54 },
   "warnings": []
 }
 ```
+
+- `fit_variant` is `"scaled_robust"` when `ordinal` is true (WLSMV) and `"standard"` when `ordinal` is false (ML).
+- `"scaled_robust"`: `chisq`, `df`, `pvalue` come from the lavaan `.scaled` values; `cfi`, `tli`, `rmsea`, `rmsea_ci_lower`, `rmsea_ci_upper` come from the `.robust` values; `srmr` is unchanged. `"standard"`: the unsuffixed lavaan values.
+- Any value that R reports as `NA` is serialized as JSON `null`.
+- These indices are reported for the technical rehearsal (smoke test). They are not a validation verdict, and no fit cut-off is applied to them.
 
 ### `POST /cfa` non-convergence (HTTP 200)
 
@@ -339,11 +401,11 @@ All schemas match `.kiro/steering/03-statistics-contract.md`.
 }
 ```
 
-| HTTP | Meaning                                                                            |
-| ---- | ---------------------------------------------------------------------------------- |
-| 200  | Success or warning; client checks `status`                                         |
-| 400  | `validation_error`: malformed JSON, missing field, null config, dimension mismatch |
-| 500  | Any other R error during computation                                               |
+| HTTP | Meaning                                                                                                      |
+| ---- | ------------------------------------------------------------------------------------------------------------ |
+| 200  | Success or warning; client checks `status`                                                                   |
+| 400  | `validation_error`: malformed JSON, missing field, null config, unsupported `uva_method`, dimension mismatch |
+| 500  | Any other R error during computation                                                                         |
 
 ## Error Handling
 
@@ -353,6 +415,8 @@ All schemas match `.kiro/steering/03-statistics-contract.md`.
 - Any other error (EGAnet, lavaan, igraph, matrix operations) is a computation error.
 - Every error response includes a UUID `request_id` (`uuid::UUIDgenerate()`), also written to the stderr log.
 - Messages include the R error text but never a stack trace.
+- Error bodies are serialized with the same serializer as successes (`auto_unbox = TRUE`, `na = "null"`, `digits = NA`).
+- The `uva_method` check in `validate_config()` runs after the null/missing check for all eight fields and before any computation, so a request with `"ejp"` can never reach `EGAnet::UVA` and hang the process.
 
 ```r
 validation_error <- function(msg) structure(
@@ -373,6 +437,8 @@ Example messages:
 
 - `"config.wto_threshold is null; owner decision required"`
 - `"config.bootstrap_type is missing"`
+- `"config.uva_method must be \"mbr\" (case-insensitive); \"ejp\" is not supported because UVA with uva.method \"ejp\", reduce.method \"remove\" and auto TRUE requires interactive input and would hang a non-interactive process"`
+- `"config.uva_method must be \"mbr\" (case-insensitive); got \"wto\""`
 - `"Invalid JSON: <parser message>"`
 - `"item_ids length (10) does not match embeddings rows (12)"`
 - `"Items in model_specification not found in item_ids: item_013"`
@@ -388,21 +454,23 @@ PBT is used only for three cheap pure functions (`compute_nmi`, `validate_config
 - Generated by `generate_fixtures.R` with a fixed seed: 3 cluster centers in a 128-dimension embedding space, 6 items per factor (18 items) as center + Gaussian noise, 0-indexed `intended_dimensions`.
 - Planted near-duplicate pair: `item_004` = `item_003` + small noise (target for UVA).
 - Planted unstable item: `item_010` as an equal mix of the factor 2 and factor 3 centers + noise (target for bootEGA).
-- Fixture config values are labeled "test-only" in the script and JSON; they are not production values and do not come from `psychometric-procedure.yaml`.
+- Fixture config values are labeled "test-only" in the script and JSON; they are not production values and do not come from `psychometric-procedure.yaml`. The fixture config uses `uva_method = "mbr"` (TEST ONLY), the only value the service accepts.
 - Expected values are not pre-set. `generate_fixtures.R` runs `execute_ega_pipeline()` once and records the actual `removed_uva`, `removed_bootega`, `nmi_initial`, `nmi_final` into `ega_expected.json`. The script documents seed, centers, noise parameters and planted indices.
 - Main assertions:
   - Exactly one of the duplicate pair is removed by UVA:
     `removed_from_pair <- intersect(result$uva$removed_items, c("item_003", "item_004"))`
     `assert_true(length(removed_from_pair) == 1, ...)`
   - `assert_true(result$nmi$final >= result$nmi$initial, ...)`
+  - Every item in `uva$removed_items` has an entry in `uva$removed_wto_scores` with a `redundant_with` that is an item ID in `item_ids` and different from the removed item, and a numeric `wto`. Every item in `bootega$removed_items` has an entry in `bootega$removed_stability_scores`.
 - Reproducibility assertions against the recorded file: removed UVA and bootEGA sets equal (`assert_set_equal`), NMI initial/final within 0.001 of recorded values (`assert_near`).
+- Repeat-request assertion: running the same request twice returns identical `uva$removed_items`, `bootega$removed_items`, `nmi$initial` and `nmi$final` (sets via `assert_set_equal`, NMI via `assert_near`).
 
 ### CFA planted-loading fixture (`test_cfa.R`)
 
 - Generated by `generate_fixtures.R` with a documented seed: 300 personas, 12 items, 2 correlated factors (`AnticDread`, `WorkRumination`, 6 items each), latent scores from `MASS::mvrnorm`, continuous responses discretized to a 1–5 Likert scale, `ordinal = true`.
 - The planted loadings, planted factor correlation, loading tolerance (±0.10) and correlation tolerance (±0.10) are stored in `cfa_expected.json`, labeled "TEST ONLY", together with the generation code reference and seed. The file defines no pass/fail ranges for CFI, RMSEA or SRMR.
-- Assertions: `status == "success"`; every recovered loading within the fixture's documented loading tolerance of its planted value; factor correlation within the fixture's documented correlation tolerance. Nothing else is asserted.
-- CFI, RMSEA, SRMR, chisq and df are printed to stdout for reporting only.
+- Assertions: `status == "success"`; `fit_variant == "scaled_robust"`; every recovered loading within the fixture's documented loading tolerance of its planted value; factor correlation within the fixture's documented correlation tolerance. Nothing else is asserted.
+- CFI, RMSEA, SRMR, chisq and df (the scaled/robust values) are printed to stdout for reporting only.
 - These checks show that the code path recovers planted structure (technical rehearsal, not validation). They are not a pass/fail verdict on any scale.
 
 ### HolzingerSwineford1939 reference (`test_holzinger.R`)
@@ -410,12 +478,15 @@ PBT is used only for three cheap pure functions (`compute_nmi`, `validate_config
 - Model: `visual =~ x1 + x2 + x3`, `textual =~ x4 + x5 + x6`, `speed =~ x7 + x8 + x9`, `ordinal = false` (ML).
 - Reference: direct `lavaan::cfa()` on the same model and data.
 - Compare `/cfa` pipeline output to the reference for chisq, CFI, RMSEA with `assert_near` at tolerance 1e-6 on `unname()`'d values, and df with a numeric tolerance (0.5). `identical()` is never used.
+- Also assert `fit_variant == "standard"` (ML uses the unsuffixed lavaan values).
 - Purpose: show that the wrapper adds no numerical artifacts.
 
 ### Validation and error tests (`test_errors.R`)
 
 - Null config field (each of the eight) → condition class `validation_error`, HTTP 400, message `"config.<field> is null; owner decision required"`.
 - Missing config field → 400 with `"config.<field> is missing"`.
+- `uva_method` `"ejp"`, `"EJP"` → `validation_error`, HTTP 400, message mentions that `"ejp"` with `reduce.method "remove"` and `auto TRUE` requires interactive input. Any other non-`"mbr"` value (e.g. `"wto"`) → 400. `"mbr"`, `"MBR"` and `"Mbr"` are accepted by `validate_config()`. The `"ejp"` request must be rejected without `EGAnet::UVA` being called (verified with a stub that fails if called).
+- Serialization: a response list containing a numeric `NA` is serialized with `jsonlite::toJSON(auto_unbox = TRUE, na = "null", digits = NA)` to `null`, and the output does not contain the string `"NA"`. A numeric such as 0.123456789 round-trips through the serializer without being rounded to 4 digits.
 - Malformed JSON body → 400 with `"Invalid JSON: ..."`.
 - Dimension mismatches (`item_ids` vs embeddings rows, `intended_dimensions` vs rows, `item_ids` vs responses columns, unknown model items) → 400 with the specific message.
 - Forced computation error (e.g. a stubbed pipeline that calls `stop()`) → 500.
@@ -423,7 +494,7 @@ PBT is used only for three cheap pure functions (`compute_nmi`, `validate_config
 
 ### Unit tests
 
-Small example-based tests for `build_lavaan_model()` (syntax string for 1 and 2 factors), `compute_nmi()` (identical partitions → 1, NA filtering with warning, length mismatch error) and `validate_config()`. The property tests in `test_properties.R` complement, not replace, these example-based unit tests: the examples pin down specific documented behaviors, while the properties sweep the input space for the same three functions.
+Small example-based tests for `build_lavaan_model()` (syntax string for 1 and 2 factors), `compute_nmi()` (identical partitions → 1, NA filtering with warning, length mismatch error), `validate_config()` (null, missing, `uva_method` accepted/rejected examples) and `extract_fit_indices()` (for a small WLSMV fit the values equal the `.scaled` / `.robust` `fitMeasures()` entries and `srmr`; for a small ML fit they equal the unsuffixed entries). The property tests in `test_properties.R` complement, not replace, these example-based unit tests: the examples pin down specific documented behaviors, while the properties sweep the input space for the same three functions.
 
 ## Correctness Properties
 
@@ -441,7 +512,7 @@ _For any_ pair of integer community-label vectors of equal length, containing no
 
 ### Property 2: validate_config() rejects any config with a null or missing field
 
-_For any_ config built from the eight required fields (`wto_threshold`, `stability_threshold`, `boot_iterations`, `network_method`, `community_algorithm`, `random_seed`, `uva_method`, `bootstrap_type`) where a non-empty subset of those fields is set to `NULL` or removed entirely, and the remaining fields hold arbitrary non-null values, `validate_config()` throws a condition inheriting from `"validation_error"`. The arbitrary non-null values used for the remaining fields are generator output for exercising the code path, not psychometric values, and are never read from or written to `app-config/psychometric-procedure.yaml`.
+_For any_ config built from the eight required fields (`wto_threshold`, `stability_threshold`, `boot_iterations`, `network_method`, `community_algorithm`, `random_seed`, `uva_method`, `bootstrap_type`) where a non-empty subset of those fields is set to `NULL` or removed entirely, and the remaining fields hold arbitrary non-null values, `validate_config()` throws a condition inheriting from `"validation_error"`. The arbitrary non-null values used for the remaining fields are generator output for exercising the code path, not psychometric values, and are never read from or written to `app-config/psychometric-procedure.yaml`. Because `validate_config()` also rejects any `uva_method` other than `"mbr"`, an arbitrary generated `uva_method` value may be rejected for that reason as well; the property asserts only that a `validation_error` is thrown, so both causes satisfy it.
 
 **Generator:** Start from the full eight-field list, generate a non-empty subset of field names to afflict, and for each afflicted field generate whether it becomes `NULL` or is dropped from the list entirely. Fill every other field with an arbitrary generated scalar (number, string, or boolean) that is never interpreted as a threshold.
 

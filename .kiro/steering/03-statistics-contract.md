@@ -50,6 +50,8 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
 - `item_ids`: string array, same length as embeddings
 - `intended_dimensions`: integer array (0-indexed), same length as embeddings
 - All `config` values must be non-null; R service returns HTTP 400 if null
+- `config.uva_method`: only `"mbr"` is accepted (case-insensitive). `"ejp"` returns HTTP 400 with a message explaining that UVA with `"ejp"`, `reduce.method = "remove"` and `auto = TRUE` needs interactive input. The config value stays null until the owner sets it.
+- `config.random_seed` is used for `bootEGA(seed = ...)` and as `set.seed()` before every `EGAnet::EGA` call, so `leiden` / `louvain` results are reproducible. All values in the examples are illustrative, not thresholds.
 
 ### Response schema (success)
 
@@ -58,10 +60,15 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
   "status": "success",
   "uva": {
     "removed_items": ["item_003", "item_007"],
+    "removed_wto_scores": {
+      "item_003": { "redundant_with": "item_004", "wto": 0.31 },
+      "item_007": { "redundant_with": "item_008", "wto": 0.27 }
+    },
     "reason": "weighted topological overlap >= 0.25"
   },
   "bootega": {
     "removed_items": ["item_012"],
+    "removed_stability_scores": { "item_012": 0.61 },
     "reason": "stability < 0.75 over 500 iterations",
     "stability_per_item": {
       "item_001": 0.92,
@@ -77,12 +84,20 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
 }
 ```
 
+**Response notes:**
+
+- `uva.removed_wto_scores`: one entry per removed item, `{ "redundant_with": <item_id>, "wto": <number> }`. EGAnet returns only pairwise wTO values, so the service reads the removed item's redundant partners from `$redundant` and takes the highest wTO among them from `$wto$pairwise`. `redundant_with` is the partner with that highest wTO.
+- `bootega.removed_stability_scores`: stability of each removed item in the pass that removed it.
+- `removed_wto_scores` and `removed_stability_scores` are used for traceability logging.
+- Numeric values that R reports as `NA` are serialized as JSON `null`.
+
 ### Response schema (error)
 
 ```json
 {
   "status": "error",
-  "message": "config.wto_threshold is null; owner decision required"
+  "message": "config.wto_threshold is null; owner decision required",
+  "request_id": "9f1c2b4e-...-uuid"
 }
 ```
 
@@ -138,6 +153,7 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
 ```json
 {
   "status": "success",
+  "fit_variant": "scaled_robust",
   "fit_indices": {
     "chisq": 42.3,
     "df": 24,
@@ -168,12 +184,20 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
 }
 ```
 
+**Fit index variants:**
+
+- `fit_variant` is `"scaled_robust"` when `ordinal` is true (WLSMV) and `"standard"` when `ordinal` is false (ML).
+- `"scaled_robust"`: `chisq`, `df`, `pvalue` come from the lavaan `.scaled` values; `cfi`, `tli`, `rmsea`, `rmsea_ci_lower`, `rmsea_ci_upper` come from the `.robust` values; `srmr` is unchanged.
+- `"standard"`: the unsuffixed lavaan values, unchanged.
+- Any value that R reports as `NA` is serialized as JSON `null`.
+- These indices are reported for the technical rehearsal (smoke test). They are not a validation verdict.
+
 ### Response schema (non-convergence)
 
 ```json
 {
   "status": "warning",
-  "message": "Model did not converge after 1000 iterations",
+  "message": "Model did not converge",
   "partial_fit_indices": { ... },
   "lavaan_warnings": ["..."]
 }
@@ -192,7 +216,7 @@ All endpoints return:
 
 - **HTTP 200** for success or warning (check `status` field in JSON)
 - **HTTP 400** for bad request (malformed JSON, null config values, dimension mismatch)
-- **HTTP 500** for internal R errors (include stack trace in `message`)
+- **HTTP 500** for internal R errors (pesan error R tanpa stack trace di `message`)
 
 Client (Next.js) must:
 
@@ -215,7 +239,8 @@ The R service must be tested against **known results**, not just "does not crash
 ### CFA test fixture
 
 - Input: 300 personas × 12 items, responses generated from known factor structure (2 factors, correlation r=0.5)
-- Expected output: loadings within ±0.1 of planted values, CFI > 0.95, RMSEA < 0.06
+- Expected output: loadings within ±0.1 of planted values; factor correlation within ±0.1 of the planted value
+- Fit indices (CFI, RMSEA, SRMR, chisq, df) are printed for reporting only. No fit cut-off is used as pass/fail on simulated data.
 
 **Test files:** `r-service/tests/test_ega.R`, `r-service/tests/test_cfa.R`
 
