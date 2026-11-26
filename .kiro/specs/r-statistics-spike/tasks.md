@@ -219,10 +219,10 @@ Hard rules for every task:
     - If hedgehog finds a counterexample, report it to the owner with the shrunk example instead of weakening the property
     - _Requirements: 2.1, 2.2, 3.2, 3.11, 3.12, 4.4_
 
-- [ ] 10. Checkpoint: run all tests and verify numeric output
+- [x] 10. Checkpoint: run all tests and verify numeric output
   - Run `Rscript tests/run_all.R` from `r-service/`. Confirm exit code 0, `"All tests passed"`, and read the printed numeric values (removed items, NMI, loadings, fit indices, Holzinger differences), not only the exit code. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. Write `r-service/README.md`
+- [x] 11. Write `r-service/README.md`
   - Required packages with minimum versions (from task 1.1), install command (`Rscript r-service/install_packages.R`)
   - Start command `Rscript r-service/api.R`; env vars `R_SERVICE_HOST` (default `127.0.0.1`), `R_SERVICE_PORT` (default `8000`), `R_SERVICE_CORS`
   - Test command `Rscript tests/run_all.R` and fixture regeneration command
