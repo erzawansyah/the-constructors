@@ -60,7 +60,7 @@ Hard rules for every task:
 
   - [x] 3.3 Implement `r-service/validation/request_validator.R`
     - `validate_ega_request(body)`: required fields present; `embeddings` bound with `rbind` if a list of rows; numeric matrix with ≥ 2 rows; `item_ids` and `intended_dimensions` lengths equal the row count, with messages such as `"item_ids length (10) does not match embeddings rows (12)"`
-    - `validate_cfa_request(body)`: required fields `responses`, `item_ids`, `model_specification`, `ordinal`; `responses` bound with `rbind` and checked as integer-valued; `item_ids` length equals the column count; every item in `model_specification.factors[*].items` is in `item_ids`, else `"Items in model_specification not found in item_ids: <ids>"`
+    - `validate_cfa_request(body)`: required fields `responses`, `item_ids`, `model_specification`, `ordinal`; `ordinal` is validated first; `responses` bound with `rbind`, finite numeric, and integer-valued only when `ordinal` is true (kept as double when false); `item_ids` length equals the column count; every item in `model_specification.factors[*].items` is in `item_ids`, else `"Items in model_specification not found in item_ids: <ids>"`
     - All failures throw `validation_error`
     - The `uva_method` check lives in `validate_config()` (task 3.2), which the `/ega` pipeline calls right after `validate_ega_request()`, so an `"ejp"` request is rejected with HTTP 400 before `EGAnet::UVA` can be reached
     - _Requirements: 5.2, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8_
@@ -139,7 +139,7 @@ Hard rules for every task:
   - [x] 8.1 Write `r-service/tests/generate_fixtures.R`
     - EGA input: fixed seed; 3 cluster centers in a 128-dimension space; 6 items per factor (18 items) as center + Gaussian noise; `item_004` = `item_003` + small noise (UVA target); `item_010` = equal mix of the factor 2 and factor 3 centers + noise (bootEGA target); 0-indexed `intended_dimensions`
     - EGA config in the fixture: every value labeled `"TEST ONLY"` in the script and in the JSON (for example a `"_label": "TEST ONLY - not production values"` field); none read from or written to `app-config/psychometric-procedure.yaml`. `uva_method` is `"mbr"` (TEST ONLY), the only value the service accepts
-    - CFA input: documented seed; 300 personas; 12 items; 2 correlated factors `AnticDread` and `WorkRumination` (6 items each); latent scores from `MASS::mvrnorm`; continuous responses discretized to 1–5; `ordinal = true`; planted loadings and planted factor correlation written to `cfa_expected.json`
+    - CFA input: documented seed; 1000 personas; 12 items; 2 correlated factors `AnticDread` and `WorkRumination` (6 items each); latent scores from `MASS::mvrnorm`; continuous responses discretized to 1–5; `ordinal = true`; planted loadings and planted factor correlation written to `cfa_expected.json`
     - `cfa_expected.json` contains only the planted loadings with loading tolerance ±0.10 (Requirement 6.5) and the planted factor correlation with tolerance ±0.10, all labeled `"TEST ONLY"`. It defines NO pass/fail ranges for CFI, RMSEA, or SRMR (Requirement 8.6)
     - Document seed, cluster centers, noise parameters, planted indices, and the regeneration command in the script header and in each JSON file
     - EGA expected values are not set by hand: the script sources the pipeline, runs `execute_ega_pipeline()` once on the generated input, and writes the actual `removed_uva`, `removed_bootega`, `nmi_initial`, `nmi_final` to `ega_expected.json`
@@ -153,17 +153,17 @@ Hard rules for every task:
     - _Requirements: 7.7, 7.8, 8.7_
 
 - [ ] 9. Write the test suite
-  - [ ] 9.1 Write `r-service/tests/helpers.R`
+  - [x] 9.1 Write `r-service/tests/helpers.R`
     - `assert_true`, `assert_equal`, `assert_near(expected, actual, tolerance, label)`, `assert_in_range`, `assert_set_equal`
     - Failed numeric assertions print expected value, actual value and tolerance to stdout and increment a shared failure counter
     - _Requirements: 6.8_
 
-  - [ ] 9.2 Write `r-service/tests/run_all.R`
+  - [x] 9.2 Write `r-service/tests/run_all.R`
     - Source `helpers.R` and every `test_*.R` file in `tests/`, run each test in `tryCatch`, print a summary
     - Exit 0 with `"All tests passed"`, or exit 1 and print the failed assertion count
     - _Requirements: 6.1, 6.9, 6.10_
 
-  - [ ] 9.3 Write `r-service/tests/test_ega.R`
+  - [x] 9.3 Write `r-service/tests/test_ega.R`
     - Load `ega_input.json` and `ega_expected.json` from `tests/fixtures/`, run `execute_ega_pipeline()`
     - `removed_from_pair <- intersect(result$uva$removed_items, c("item_003", "item_004"))`; `assert_true(length(removed_from_pair) == 1, ...)`
     - `assert_true(result$nmi$final >= result$nmi$initial, ...)`
@@ -172,21 +172,21 @@ Hard rules for every task:
     - Repeat-request: run the same request twice; `uva$removed_items` and `bootega$removed_items` equal as sets (`assert_set_equal`), `nmi$initial` and `nmi$final` equal within 0.001 (`assert_near`)
     - _Requirements: 3.14, 3.17, 3.20, 6.2, 6.3, 6.4, 6.13, 7.10, 7.11_
 
-  - [ ] 9.4 Write `r-service/tests/test_cfa.R`
+  - [x] 9.4 Write `r-service/tests/test_cfa.R`
     - Load `cfa_input.json` and `cfa_expected.json`, run `execute_cfa_pipeline()`
     - Assert `status == "success"`; `fit_variant == "scaled_robust"`; every loading within the fixture's loading tolerance (±0.10) of its planted value; factor correlation within the fixture's correlation tolerance (±0.10). Assert nothing else
     - Do NOT assert on CFI, RMSEA, or SRMR. Print them, together with chisq and df (the scaled/robust values), to stdout for reporting only
     - Comment in the test that it checks the code path recovers planted structure, and that it is a technical rehearsal, not validation and not a verdict on any scale
     - _Requirements: 4.13, 6.2, 6.5, 6.6, 6.11, 8.11_
 
-  - [ ] 9.5 Write `r-service/tests/test_holzinger.R`
+  - [x] 9.5 Write `r-service/tests/test_holzinger.R`
     - Model `visual =~ x1 + x2 + x3`, `textual =~ x4 + x5 + x6`, `speed =~ x7 + x8 + x9` on `lavaan::HolzingerSwineford1939`, `ordinal = false`
     - Reference: direct `lavaan::cfa(model, data, estimator = "ML", std.lv = TRUE)` and `fitMeasures()`
     - Compare `/cfa` pipeline output with `assert_near` at tolerance 1e-6 on `unname()`'d chisq, CFI, RMSEA, and df at tolerance 0.5. Never use `identical()`
     - Assert `fit_variant == "standard"` (ML uses the unsuffixed lavaan values)
     - _Requirements: 4.12, 4.13, 6.7, 6.12, 8.9, 8.10, 8.12_
 
-  - [ ] 9.6 Write `r-service/tests/test_errors.R`
+  - [x] 9.6 Write `r-service/tests/test_errors.R`
     - Call handlers from `make_handler()` with mock `req` (`postBody`) and `res` objects
     - Each of the eight config fields set to null → `res$status == 400`, message `"config.<field> is null; owner decision required"`; a missing field → 400 with `"config.<field> is missing"`
     - `uva_method` `"ejp"` and `"EJP"` → `validation_error`, `res$status == 400`, message states that `"ejp"` with `reduce.method "remove"` and `auto TRUE` requires interactive input. Another non-`"mbr"` value (for example `"wto"`) → 400. `"mbr"`, `"MBR"` and `"Mbr"` are accepted by `validate_config()`. For `"ejp"`, a stub replacing `EGAnet::UVA` that fails if called proves the request is rejected before UVA runs
@@ -198,12 +198,12 @@ Hard rules for every task:
     - Config values in this file are labeled `# TEST ONLY`
     - _Requirements: 2.1, 2.5, 3.2, 5.1, 5.2, 5.3, 5.4, 5.6, 9.7, 9.8, 9.9, 9.10, 12.6_
 
-  - [ ] 9.7 Write `r-service/tests/test_units.R`
+  - [x] 9.7 Write `r-service/tests/test_units.R`
     - `build_lavaan_model()`: exact syntax string for 1-factor and 2-factor specifications
     - `compute_nmi()`: identical partitions → 1; NA in `detected` is dropped with a warning; length mismatch → error; all-NA → error
     - `validate_config()`: null and missing fields raise `validation_error` with the documented messages; a complete config passes. `uva_method` examples: `"mbr"`, `"MBR"`, `"Mbr"` accepted; `"ejp"`, `"EJP"` and `"wto"` raise `validation_error` (the `"ejp"` message mentions interactive input); a null `uva_method` raises `"config.uva_method is null; owner decision required"`
     - `extract_fit_indices()`: on a small WLSMV fit, the returned `chisq`, `df`, `pvalue` equal the `fitMeasures()` entries `chisq.scaled`, `df.scaled`, `pvalue.scaled`; `cfi`, `tli`, `rmsea`, `rmsea_ci_lower`, `rmsea_ci_upper` equal `cfi.robust`, `tli.robust`, `rmsea.robust`, `rmsea.ci.lower.robust`, `rmsea.ci.upper.robust`; `srmr` equals unsuffixed `srmr`; `fit_variant == "scaled_robust"`. On a small ML fit, every value equals the unsuffixed entry and `fit_variant == "standard"`. Compare with `assert_near` at 1e-6. A value lavaan reports as `NA` stays `NA`
-    - `validate_ega_request()` / `validate_cfa_request()`: fewer than 2 embedding rows, non-integer responses
+    - `validate_ega_request()` / `validate_cfa_request()`: fewer than 2 embedding rows; non-integer responses rejected when `ordinal` is true ("responses must contain only integer values") and accepted, kept as double, when `ordinal` is false
     - _Requirements: 2.1, 2.2, 2.5, 3.11, 3.12, 4.4, 4.10, 4.11, 4.12, 4.13, 4.14, 9.1, 9.4, 9.8, 9.9, 9.10_
 
   - [ ] 9.8 Write `r-service/tests/test_properties.R` (property-based tests)

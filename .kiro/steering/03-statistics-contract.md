@@ -238,7 +238,7 @@ The R service must be tested against **known results**, not just "does not crash
 
 ### CFA test fixture
 
-- Input: 300 personas × 12 items, responses generated from known factor structure (2 factors, correlation r=0.5)
+- Input: 1000 personas × 12 items, responses generated from known factor structure (2 factors, correlation r=0.5)
 - Expected output: loadings within ±0.1 of planted values; factor correlation within ±0.1 of the planted value
 - Fit indices (CFI, RMSEA, SRMR, chisq, df) are printed for reporting only. No fit cut-off is used as pass/fail on simulated data.
 

@@ -3,7 +3,7 @@
   "hooks": [
     {
       "name": "Journal Reminder",
-      "enabled": false,
+      "enabled": true,
       "trigger": "Stop",
       "action": {
         "type": "agent",

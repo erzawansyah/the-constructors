@@ -179,7 +179,7 @@ The service runs as a separate process from the main Next.js application and com
 1. WHEN the `/ega` endpoint receives a request, THE R_Service SHALL verify that `embeddings` is a numeric matrix with at least 2 rows
 2. WHEN the `/ega` endpoint receives a request, THE R_Service SHALL verify that `item_ids` length equals the number of rows in `embeddings`
 3. WHEN the `/ega` endpoint receives a request, THE R_Service SHALL verify that `intended_dimensions` length equals the number of rows in `embeddings`
-4. WHEN the `/cfa` endpoint receives a request, THE R_Service SHALL verify that `responses` is an integer matrix
+4. WHEN the `/cfa` endpoint receives a request, THE R_Service SHALL verify that `responses` is an integer matrix when `ordinal` is true, and a numeric matrix when `ordinal` is false
 5. WHEN the `/cfa` endpoint receives a request, THE R_Service SHALL verify that `item_ids` length equals the number of columns in `responses`
 6. WHEN the `/cfa` endpoint receives a request, THE R_Service SHALL verify that all items in `model_specification.factors` are present in `item_ids`
 7. IF validation fails, THEN THE R_Service SHALL return HTTP 400 with a specific error message indicating which validation rule was violated

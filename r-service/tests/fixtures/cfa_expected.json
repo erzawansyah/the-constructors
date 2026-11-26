@@ -4,9 +4,9 @@
     "label": "TEST ONLY - not production values",
     "regenerate": "Rscript tests/generate_fixtures.R (run from r-service/)",
     "seed": 20260102,
-    "n_personas": 300,
+    "n_personas": 1000,
     "n_items": 12,
-    "latent_scores": "MASS::mvrnorm(300, c(0, 0), Sigma), unit variances; TEST ONLY",
+    "latent_scores": "MASS::mvrnorm(1000, c(0, 0), Sigma), unit variances; TEST ONLY",
     "noise_parameters": {
       "residual": "x = loading * latent + sqrt(1 - loading^2) * N(0, 1)",
       "cut_points": [-1, -0.3, 0.3, 1],

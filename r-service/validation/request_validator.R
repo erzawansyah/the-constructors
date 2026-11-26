@@ -26,7 +26,9 @@
 #   validate_cfa_request(body)
 #     Checks `responses`, `item_ids`, `model_specification`, `ordinal`.
 #     Returns `body` with normalized fields:
-#       responses           integer matrix, rows = personas, columns = items
+#       responses           matrix, rows = personas, columns = items; integer
+#                           when ordinal is true (whole numbers required),
+#                           double when ordinal is false (any finite numbers)
 #       item_ids            character vector
 #       model_specification list(factors = list(list(name = <chr>,
 #                                                    items = <chr vector>), ...))
@@ -218,18 +220,28 @@ validate_ega_request <- function(body) {
 validate_cfa_request <- function(body) {
   .require_fields(body, c("responses", "item_ids", "model_specification", "ordinal"))
 
+  # ordinal is read first: it decides whether responses must be integer-valued.
+  ordinal <- body$ordinal
+  if (!is.logical(ordinal) || length(ordinal) != 1L || is.na(ordinal)) {
+    stop(validation_error("ordinal must be true or false"))
+  }
+
   resp <- .as_row_matrix(body$responses, "responses")
   .check_numeric_matrix(resp, "responses")
-  if (!.is_whole(resp)) {
-    stop(validation_error("responses must contain only integer values"))
+  if (ordinal) {
+    if (!.is_whole(resp)) {
+      stop(validation_error("responses must contain only integer values"))
+    }
+    resp <- round(resp)
+    storage.mode(resp) <- "integer"
+  } else {
+    storage.mode(resp) <- "double"
   }
   if (nrow(resp) < 2L) {
     stop(validation_error(sprintf(
       "responses must have at least 2 rows (got %d)", nrow(resp)
     )))
   }
-  resp <- round(resp)
-  storage.mode(resp) <- "integer"
   dimnames(resp) <- NULL
 
   item_ids <- .as_item_ids(body$item_ids)
@@ -261,11 +273,6 @@ validate_cfa_request <- function(body) {
       "Items in model_specification not found in item_ids: ",
       paste(unknown, collapse = ", ")
     )))
-  }
-
-  ordinal <- body$ordinal
-  if (!is.logical(ordinal) || length(ordinal) != 1L || is.na(ordinal)) {
-    stop(validation_error("ordinal must be true or false"))
   }
 
   body$responses <- resp

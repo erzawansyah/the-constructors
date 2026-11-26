@@ -48,10 +48,10 @@
 #
 # ---- CFA input (TEST ONLY) --------------------------------------------------
 # Seed:            CFA_SEED = 20260102
-# Personas/items:  300 personas x 12 items.
+# Personas/items:  1000 personas x 12 items.
 # Factors:         AnticDread (item_001..item_006) and WorkRumination
 #                  (item_007..item_012), 6 items each.
-# Latent scores:   MASS::mvrnorm(300, c(0, 0), Sigma) with unit variances and
+# Latent scores:   MASS::mvrnorm(1000, c(0, 0), Sigma) with unit variances and
 #                  factor correlation PLANTED_FACTOR_CORRELATION = 0.5.
 # Planted loadings (standardized): 0.60, 0.65, 0.70, 0.75, 0.80, 0.70 for the
 #                  six items of each factor, in item order.
@@ -220,7 +220,7 @@ write_json_file(ega_expected, "ega_expected.json")
 # ---- 3. CFA input -----------------------------------------------------------
 
 CFA_SEED <- 20260102
-N_PERSONAS <- 300L
+N_PERSONAS <- 1000L
 PLANTED_FACTOR_CORRELATION <- 0.5                      # TEST ONLY
 PLANTED_LOADINGS_PER_FACTOR <- c(0.60, 0.65, 0.70, 0.75, 0.80, 0.70)  # TEST ONLY
 CUT_POINTS <- c(-1.0, -0.3, 0.3, 1.0)                  # TEST ONLY
@@ -249,7 +249,7 @@ cfa_documentation <- list(
   seed = CFA_SEED,
   n_personas = N_PERSONAS,
   n_items = 12L,
-  latent_scores = "MASS::mvrnorm(300, c(0, 0), Sigma), unit variances; TEST ONLY",
+  latent_scores = "MASS::mvrnorm(1000, c(0, 0), Sigma), unit variances; TEST ONLY",
   noise_parameters = list(
     residual = "x = loading * latent + sqrt(1 - loading^2) * N(0, 1)",
     cut_points = CUT_POINTS,
