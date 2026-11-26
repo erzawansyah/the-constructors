@@ -34,7 +34,12 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
   "config": {
     "wto_threshold": null,          // null triggers error
     "stability_threshold": null,    // null triggers error
-    "boot_iterations": null          // null triggers error
+    "boot_iterations": null,         // null triggers error
+    "network_method": null,          // null triggers error
+    "community_algorithm": null,     // null triggers error
+    "random_seed": null,              // null triggers error
+    "uva_method": null,               // null triggers error
+    "bootstrap_type": null            // null triggers error
   }
 }
 ```

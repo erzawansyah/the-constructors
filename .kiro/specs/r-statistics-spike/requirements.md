@@ -55,7 +55,7 @@ The service runs as a separate process from the main Next.js application and com
 #### Acceptance Criteria
 
 1. THE R_Service SHALL expose a `/ega` endpoint that accepts POST requests with JSON payload containing embeddings matrix, item IDs, intended dimensions, and configuration parameters
-2. IF config.wto_threshold, config.network_method, config.community_algorithm, config.stability_threshold, config.boot_iterations, or config.random_seed is null, THEN THE R_Service SHALL return HTTP 400 with error message "config.<field_name> is null; owner decision required"
+2. IF config.wto_threshold, config.uva_method, config.bootstrap_type, config.network_method, config.community_algorithm, config.stability_threshold, config.boot_iterations, or config.random_seed is null, THEN THE R_Service SHALL return HTTP 400 with error message "config.<field_name> is null; owner decision required"
 3. WHEN the `/ega` endpoint receives a valid request, THE R_Service SHALL transpose the embeddings matrix so that embedding dimensions become observations and items become variables, following the AI-GENIE methodology
 4. WHEN the transposed embeddings are prepared, THE R_Service SHALL execute UVA (Unique Variable Analysis) with the weighted topological overlap threshold from config.wto_threshold
 5. WHEN UVA identifies redundant items, THE R_Service SHALL repeat UVA on the retained item set until no redundant items remain
