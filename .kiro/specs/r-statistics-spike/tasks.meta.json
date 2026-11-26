@@ -380,6 +380,35 @@
         "chatSessionId": "sess_b3c21e95-d40b-4337-9eb4-8935a778ee6d",
         "timestamp": 1795732891792
       }
+    ],
+    "9.8 Write `r-service/tests/test_properties.R` (property-based tests)": [
+      {
+        "executionId": "4acd47a6-f707-4835-be59-c6c0cdacb87f",
+        "chatSessionId": "sess_a114f825-a756-48ed-a0da-a4b95b3fd9c3",
+        "timestamp": 1795733352963
+      },
+      {
+        "executionId": "4acd47a6-f707-4835-be59-c6c0cdacb87f",
+        "chatSessionId": "sess_a114f825-a756-48ed-a0da-a4b95b3fd9c3",
+        "timestamp": 1795733599424
+      },
+      {
+        "executionId": "803893c5-21c7-4ea7-a8c2-4d056487e372",
+        "chatSessionId": "sess_a114f825-a756-48ed-a0da-a4b95b3fd9c3",
+        "timestamp": 1795733751220
+      },
+      {
+        "executionId": "803893c5-21c7-4ea7-a8c2-4d056487e372",
+        "chatSessionId": "sess_a114f825-a756-48ed-a0da-a4b95b3fd9c3",
+        "timestamp": 1795733837302
+      }
+    ],
+    "9. Write the test suite": [
+      {
+        "executionId": "4acd47a6-f707-4835-be59-c6c0cdacb87f",
+        "chatSessionId": "sess_a114f825-a756-48ed-a0da-a4b95b3fd9c3",
+        "timestamp": 1795733599648
+      }
     ]
   }
 }

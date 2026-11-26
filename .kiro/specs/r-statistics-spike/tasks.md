@@ -152,7 +152,7 @@ Hard rules for every task:
     - Do not run `git add`, `git commit` or `git push`. Leave the generated fixture files uncommitted and tell the owner which files to commit (`r-service/tests/fixtures/ega_input.json`, `ega_expected.json`, `cfa_input.json`, `cfa_expected.json`)
     - _Requirements: 7.7, 7.8, 8.7_
 
-- [ ] 9. Write the test suite
+- [x] 9. Write the test suite
   - [x] 9.1 Write `r-service/tests/helpers.R`
     - `assert_true`, `assert_equal`, `assert_near(expected, actual, tolerance, label)`, `assert_in_range`, `assert_set_equal`
     - Failed numeric assertions print expected value, actual value and tolerance to stdout and increment a shared failure counter
@@ -206,7 +206,7 @@ Hard rules for every task:
     - `validate_ega_request()` / `validate_cfa_request()`: fewer than 2 embedding rows; non-integer responses rejected when `ordinal` is true ("responses must contain only integer values") and accepted, kept as double, when `ordinal` is false
     - _Requirements: 2.1, 2.2, 2.5, 3.11, 3.12, 4.4, 4.10, 4.11, 4.12, 4.13, 4.14, 9.1, 9.4, 9.8, 9.9, 9.10_
 
-  - [ ] 9.8 Write `r-service/tests/test_properties.R` (property-based tests)
+  - [x] 9.8 Write `r-service/tests/test_properties.R` (property-based tests)
     - Add `testthat` and `hedgehog` to `r-service/install_packages.R` as test-only dependencies (never loaded by `api.R`), install them, and record their `packageVersion()` for the README
     - Verify generator names against the installed package before use (`ls("package:hedgehog")`, the package manual, or the CRAN vignette). The vignette documents `gen.c`, `gen.element`, `gen.unif`, `gen.sample`, `gen.with`, `gen.and_then` and `generate(for (x in gen) ...)`. Record the verified names in a comment at the top of the file. Context7 does not index the R `hedgehog` package, so verification is done against the CRAN vignette/manual and the installed package
     - Put `set.seed()` with a documented value at the top of the file for reproducibility

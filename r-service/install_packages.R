@@ -21,6 +21,13 @@ required_packages <- c(
   "MASS"
 )
 
+# Test-only packages (tests/test_properties.R). Never loaded by api.R.
+test_packages <- c(
+  "testthat",
+  "hedgehog"
+)
+required_packages <- c(required_packages, test_packages)
+
 installed <- rownames(installed.packages())
 missing <- setdiff(required_packages, installed)
 

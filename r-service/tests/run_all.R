@@ -4,6 +4,8 @@
 #
 # Sources helpers.R, then every test_*.R in this directory (sorted by name).
 # Each file runs inside tryCatch; a file that errors counts as a failure.
+# test_properties.R is run through testthat::test_file() instead; its failed and
+# errored expectations are added to the shared failure counter.
 # Exit 0 when nothing failed, exit 1 otherwise.
 
 local({
@@ -23,7 +25,10 @@ setwd(dirname(.tests_dir))
 source(file.path(.tests_dir, "helpers.R"), local = FALSE)
 reset_test_state()
 
-test_files <- sort(list.files(.tests_dir, pattern = "^test_.*\\.R$", full.names = TRUE))
+all_test_files <- sort(list.files(.tests_dir, pattern = "^test_.*\\.R$", full.names = TRUE))
+# test_properties.R uses testthat + hedgehog and is run through testthat below.
+property_file <- file.path(.tests_dir, "test_properties.R")
+test_files <- setdiff(all_test_files, property_file)
 errored_files <- character(0)
 
 for (f in test_files) {
@@ -41,6 +46,26 @@ for (f in test_files) {
   cat(sprintf("-- %s: %d failed assertion(s)%s\n", name,
               get_test_failures() - before,
               if (ok) "" else " (file errored)"))
+}
+
+if (file.exists(property_file)) {
+  cat("\n== test_properties.R (testthat) ==\n")
+  prop_nb <- 0L
+  prop_failed <- tryCatch({
+    res <- as.data.frame(testthat::test_file(
+      property_file, reporter = "summary", stop_on_failure = FALSE
+    ))
+    prop_nb <- as.integer(sum(res$nb))
+    as.integer(sum(res$failed) + sum(res$error))
+  }, error = function(e) {
+    cat(sprintf("ERROR in test_properties.R: %s\n", conditionMessage(e)))
+    errored_files <<- c(errored_files, "test_properties.R")
+    0L
+  })
+  .test_state$failures <- .test_state$failures + prop_failed
+  .test_state$assertions <- .test_state$assertions + prop_nb
+  cat(sprintf("-- test_properties.R: %d failed/errored expectation(s)\n", prop_failed))
+  test_files <- c(test_files, property_file)
 }
 
 failures <- get_test_failures()
