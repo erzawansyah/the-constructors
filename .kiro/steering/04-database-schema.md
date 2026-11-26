@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "**/*{schema,migration,supabase,database,rls}*"
+fileMatchPattern: ["supabase/**"]
 ---
 
 # Database Schema — Supabase (PostgreSQL)
@@ -18,41 +18,41 @@ CREATE TABLE scales (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  
+
   -- Metadata
   name TEXT NOT NULL,
   construct_name TEXT NOT NULL,
   source_type TEXT NOT NULL CHECK (source_type IN ('app_built', 'published')),
-  
+
   -- For app-built scales
   creator_id UUID REFERENCES auth.users(id),
   creator_role TEXT CHECK (creator_role IN ('scientist', 'business', NULL)),
   data_policy TEXT CHECK (data_policy IN ('research', 'private', NULL)),
-  
+
   -- For published scales
   citation TEXT,
   doi TEXT,
   license_status TEXT CHECK (license_status IN ('open', 'closed', 'unknown', NULL)),
-  
+
   -- Scale content
   items JSONB NOT NULL, -- Array of {id, text, dimension, indicator, metadata}
   dimensions JSONB NOT NULL, -- Array of {name, definition, indicators}
   construct_framework JSONB, -- Full framework from literature research
-  
+
   -- Validity ladder
   validity_tier INTEGER NOT NULL DEFAULT 0 CHECK (validity_tier BETWEEN 0 AND 5),
   -- 0=draft, 1=LLM screened, 2=structural screened, 3=smoke tested, 4=human data, 5=norms
-  
+
   -- Pipeline artifacts
   dropped_items JSONB, -- Array of {item, stage, reason, metrics}
   traceability_log JSONB, -- Full pipeline log (models, prompts, decisions)
-  
+
   -- Counts
   response_count INTEGER NOT NULL DEFAULT 0,
-  
+
   -- Status
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
-  
+
   -- Full-text search
   search_vector TSVECTOR GENERATED ALWAYS AS (
     to_tsvector('english', coalesce(name, '') || ' ' || coalesce(construct_name, ''))
@@ -73,18 +73,18 @@ Stores individual respondent answers.
 CREATE TABLE responses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  
+
   scale_id UUID NOT NULL REFERENCES scales(id) ON DELETE CASCADE,
   respondent_id UUID REFERENCES auth.users(id), -- NULL for anonymous
-  
+
   -- Response data
   answers JSONB NOT NULL, -- {item_id: likert_value}
   dimension_scores JSONB NOT NULL, -- {dimension_name: score}
-  
+
   -- Metadata
   completion_time_seconds INTEGER,
   user_agent TEXT,
-  
+
   -- RLS policy enforcement
   data_policy TEXT NOT NULL CHECK (data_policy IN ('research', 'private'))
 );
@@ -102,14 +102,14 @@ Share links for published scales.
 CREATE TABLE share_links (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  
+
   scale_id UUID NOT NULL REFERENCES scales(id) ON DELETE CASCADE,
   token TEXT NOT NULL UNIQUE,
-  
+
   expires_at TIMESTAMPTZ,
   max_uses INTEGER,
   use_count INTEGER NOT NULL DEFAULT 0,
-  
+
   active BOOLEAN NOT NULL DEFAULT true
 );
 
@@ -126,10 +126,10 @@ CREATE TABLE user_profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  
+
   role TEXT CHECK (role IN ('scientist', 'business', 'respondent')),
   organization TEXT,
-  
+
   -- Preferences
   preferred_language TEXT DEFAULT 'en',
   email_notifications BOOLEAN DEFAULT true
@@ -328,35 +328,7 @@ Example: `20261126120000_initial_schema.sql`
 
 ---
 
-## Analytics views (future)
-
-For norm calculation and progress display (FR-RESP-3):
-
-```sql
-CREATE VIEW scale_response_stats AS
-SELECT
-  s.id AS scale_id,
-  s.name,
-  s.response_count,
-  CASE
-    WHEN s.response_count < 100 THEN 'tier1_self_reflection'
-    WHEN s.response_count < 1000 THEN 'tier2_provisional'
-    ELSE 'tier3_norms'
-  END AS feedback_tier,
-  jsonb_object_agg(
-    dim.name,
-    jsonb_build_object(
-      'mean', AVG((r.dimension_scores->>dim.name)::FLOAT),
-      'sd', STDDEV((r.dimension_scores->>dim.name)::FLOAT),
-      'percentiles', percentile_cont(ARRAY[0.25, 0.5, 0.75]) WITHIN GROUP (ORDER BY (r.dimension_scores->>dim.name)::FLOAT)
-    )
-  ) AS dimension_stats
-FROM scales s
-CROSS JOIN LATERAL jsonb_array_elements(s.dimensions) AS dim(name)
-LEFT JOIN responses r ON r.scale_id = s.id
-WHERE s.status = 'published' AND s.data_policy = 'research'
-GROUP BY s.id, s.name, s.response_count;
-```
+Feedback tier thresholds are read from app-config/psychometric-procedure.yaml, never hardcoded in SQL.
 
 ---
 
@@ -365,21 +337,22 @@ GROUP BY s.id, s.name, s.response_count;
 Use Supabase JS client:
 
 ```typescript
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
+  process.env.SUPABASE_ANON_KEY!,
 );
 
 // RLS enforces policy automatically
 const { data: scales } = await supabase
-  .from('scales')
-  .select('*')
-  .eq('status', 'published');
+  .from("scales")
+  .select("*")
+  .eq("status", "published");
 ```
 
 Environment variables:
+
 - `SUPABASE_URL`: `http://localhost:54321` (default for self-hosted)
 - `SUPABASE_ANON_KEY`: Generated during Supabase setup
 - `SUPABASE_SERVICE_ROLE_KEY`: For admin operations (never expose to client)

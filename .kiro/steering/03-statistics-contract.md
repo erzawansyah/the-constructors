@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "**/*{statistics,ega,cfa,lavaan,plumber,r-service}*"
+fileMatchPattern: ["r-service/**"]
 ---
 
 # Statistics Service Contract — R (plumber) JSON API
@@ -32,14 +32,15 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
   "item_ids": ["item_001", "item_002", ...],
   "intended_dimensions": [0, 0, 1, 1, 2, 2, ...],  // dimension assignment per item
   "config": {
-    "wto_threshold": 0.25,          // null triggers error
-    "stability_threshold": 0.75,    // null triggers error
-    "boot_iterations": 500          // null triggers error
+    "wto_threshold": null,          // null triggers error
+    "stability_threshold": null,    // null triggers error
+    "boot_iterations": null          // null triggers error
   }
 }
 ```
 
 **Notes:**
+
 - `embeddings`: numeric matrix, one row per item, columns = embedding dimensions
 - `item_ids`: string array, same length as embeddings
 - `intended_dimensions`: integer array (0-indexed), same length as embeddings
@@ -81,6 +82,7 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
 ```
 
 **R packages used:**
+
 - `EGAnet::UVA()` — redundancy removal
 - `EGAnet::bootEGA()` — stability analysis
 - `igraph::compare()` — NMI computation
@@ -120,6 +122,7 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
 ```
 
 **Notes:**
+
 - `responses`: integer matrix, rows = personas, columns = items
 - `item_ids`: string array, same length as number of columns
 - `model_specification.factors`: list of factor definitions (item → factor mapping)
@@ -172,6 +175,7 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
 ```
 
 **R packages used:**
+
 - `lavaan::cfa()` — CFA with WLSMV estimator
 - `lavaan::fitMeasures()` — extract fit indices
 
@@ -180,11 +184,13 @@ The R statistics service provides EGAnet and lavaan endpoints for structural scr
 ## Error handling
 
 All endpoints return:
+
 - **HTTP 200** for success or warning (check `status` field in JSON)
 - **HTTP 400** for bad request (malformed JSON, null config values, dimension mismatch)
 - **HTTP 500** for internal R errors (include stack trace in `message`)
 
 Client (Next.js) must:
+
 1. Check HTTP status
 2. Parse JSON
 3. Check `status` field (`"success"` | `"warning"` | `"error"`)
@@ -197,10 +203,12 @@ Client (Next.js) must:
 The R service must be tested against **known results**, not just "does not crash":
 
 ### EGA test fixture
+
 - Input: 18-item embedding matrix from a 3-factor structure (6 items per factor, known redundancies planted)
 - Expected output: specific items flagged as redundant, NMI values in expected range
 
 ### CFA test fixture
+
 - Input: 300 personas × 12 items, responses generated from known factor structure (2 factors, correlation r=0.5)
 - Expected output: loadings within ±0.1 of planted values, CFI > 0.95, RMSEA < 0.06
 

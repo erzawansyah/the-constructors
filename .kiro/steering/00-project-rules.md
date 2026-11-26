@@ -10,26 +10,27 @@ These are hard rules that apply to all development work on The Constructors.
 
 **All psychometric thresholds, loop bounds, and procedure parameters MUST be read from `app-config/psychometric-procedure.yaml`.**
 
-- Never hardcode cut-off values (I-CVI, k*, c, d, wTO, stability, feedback tiers, loop limits, etc.) in code or prompts.
+- Never hardcode cut-off values (I-CVI, k\*, c, d, wTO, stability, feedback tiers, loop limits, etc.) in code or prompts.
 - If a config value is `null`, **STOP and ask the owner** for a decision. Do not invent, estimate, or use "reasonable defaults".
 - When implementing agent logic that uses thresholds, always load from config and handle `null` explicitly.
 
 Example config reference pattern:
+
 ```typescript
-const procedure = loadConfig('psychometric-procedure.yaml');
+const procedure = loadConfig("psychometric-procedure.yaml");
 if (procedure.panel.i_cvi_threshold === null) {
-  throw new Error('I-CVI threshold not set. Owner decision required.');
+  throw new Error("I-CVI threshold not set. Owner decision required.");
 }
 ```
 
 ## Runtime vs dev-time separation
 
-| Path | Purpose | Committed |
-|------|---------|-----------|
-| `.kiro/` | Development harness: steering, specs, hooks | ✅ Yes — never add to `.gitignore` |
-| `app-config/` | Runtime configuration: thresholds, model configs, copy text | ✅ Yes |
-| `src/agents/prompts/` | Agent prompt templates | ✅ Yes |
-| `notes/` | Development journal, scratch | ✅ Yes (journal is a project artifact) |
+| Path                  | Purpose                                                     | Committed                          |
+| --------------------- | ----------------------------------------------------------- | ---------------------------------- |
+| `.kiro/`              | Development harness: steering, specs, hooks                 | ✅ Yes — never add to `.gitignore` |
+| `app-config/`         | Runtime configuration: thresholds, model configs, copy text | ✅ Yes                             |
+| `src/agents/prompts/` | Agent prompt templates                                      | ✅ Yes                             |
+| `notes/`              | Private journal and PRD (owner only)                        | ❌ No — git-ignored, never commit  |
 
 **Rule:** `.kiro/` steering files may **reference** runtime files (e.g. `#[[file:app-config/psychometric-procedure.yaml]]`) but never duplicate their content.
 
@@ -50,12 +51,14 @@ Orchestration: `docker-compose.yml` at root.
 This project uses **Strands Agents TypeScript SDK** (`@strands-agents/sdk`), not the Python version.
 
 Key patterns:
+
 - **Graph** for the fixed pipeline with bounded loops
 - **Decision models** (`LLMDecisionModel.ask`) for closed-choice judgements (always pass explicit model)
 - **Interrupts** for mid-pipeline questions to creators
 - **Zod schemas** for structured outputs
 
 Known risks (verify during implementation):
+
 - Decision model support for non-Bedrock providers may be undocumented
 - Graph structured-output nodes may forward tool-use blocks to next node (open issue)
 - Graph uses AND-join semantics (node runs only when all incoming edges complete)
@@ -63,6 +66,7 @@ Known risks (verify during implementation):
 ## Traceability requirement
 
 Every agent execution must log:
+
 - Model ID and version
 - Temperature and sampling parameters
 - Prompt version identifier
